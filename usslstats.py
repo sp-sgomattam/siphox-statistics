@@ -134,6 +134,7 @@ def clean_lab_data(in_lab):
     in_lab = in_lab[
         (in_lab["spotSku"] != "quantify_cortisol_kit")
         & (in_lab["spotSku"] != "quantify_dna_methylation_kit")
+        & (in_lab["spotSku"] != "quantify_microtainer_collection_kit")
     ]
     # sort
     in_lab = in_lab.sort_values(by="lastUpdatedDate", ascending=False)
