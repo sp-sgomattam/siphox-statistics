@@ -1,0 +1,6 @@
+pandas
+pymongo
+slack_sdk
+Flask
+requests
+python-dotenv
