@@ -4,3 +4,4 @@ slack_sdk
 Flask
 requests
 python-dotenv
+numpy

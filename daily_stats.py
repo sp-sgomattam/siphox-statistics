@@ -194,8 +194,8 @@ def main():
     message = generate_message(in_lab)
     
     # NOTE: ONLY UNCOMMENT THE FOLLOWING LINES IF YOU ARE READY TO SEND STATISTICS TO SLACK / EMAIL
-    # send_slack_message(message)
-    # send_email(message)
+    send_slack_message(message, path0)
+    send_email(message, path0)
     return in_lab
 
 # Lambda handler function

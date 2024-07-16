@@ -34,6 +34,6 @@ def send_slack_message(message, input_file, slack_channel_id = USSL_CHANNEL_ID):
 
     new_message = slack_client.files_completeUploadExternal(
         channel_id = slack_channel_id,
-        files=[{"id":file_id, "title":f"Data_{datetime.today()}"}],
+        files=[{"id":file_id, "title":f"Data_{datetime.date.today()}"}],
         initial_comment= message
     )
