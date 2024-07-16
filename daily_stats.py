@@ -162,7 +162,8 @@ def generate_message(in_lab):
     today_date = datetime.today().date()
     two_weeks_ago = datetime.today() - timedelta(days=14)
 
-    message = f"""Total samples at USSL: {in_lab['daysDeliveredDiff'].count()}\n
+    message = f""" --- DAILY USSL STATISTICS FOR {today_date} ---\n
+    Total samples at USSL: {in_lab['daysDeliveredDiff'].count()}\n
     Samples delivered to USSL but not marked received: {delivered_not_received}\n
     Samples marked received but not processed: {not_processed}\n
     Samples not processed for less than two days: {less_than_two_days}\n

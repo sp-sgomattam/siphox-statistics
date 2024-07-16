@@ -51,9 +51,9 @@ def calc_processing_time(row, holidays=[]):
 
 
 def process_data_for_months(df, year, months):
-    colin_data = df[(df["sampleDelivered"] == True) | (df["sampleReceived"] == True)]
-    colin_data = colin_data[colin_data["sampleResulted"] == True]
-    colin_data = colin_data[
+    mutated_data = df[(df["sampleDelivered"] == True) | (df["sampleReceived"] == True)]
+    mutated_data = mutated_data[mutated_data["sampleResulted"] == True]
+    mutated_data = mutated_data[
         [
             "sampleID",
             "sampleReceived",
@@ -64,7 +64,7 @@ def process_data_for_months(df, year, months):
         ]
     ]
 
-    colin_data["receivedDate"] = colin_data.apply(
+    mutated_data["receivedDate"] = mutated_data.apply(
         lambda x: (
             date_updated(x["createdDate"], x["sampleReceivedDiff"])
             if not pd.isna(x["sampleReceivedDiff"])
@@ -72,7 +72,7 @@ def process_data_for_months(df, year, months):
         ),
         axis=1,
     )
-    colin_data["resultedDate"] = colin_data.apply(
+    mutated_data["resultedDate"] = mutated_data.apply(
         lambda x: (
             date_updated(x["createdDate"], x["sampleResultedDiff"])
             if not pd.isna(x["sampleResultedDiff"])
@@ -80,21 +80,20 @@ def process_data_for_months(df, year, months):
         ),
         axis=1,
     )
-    colin_data["processingTime"] = colin_data.apply(calc_processing_time, axis=1)
-    colin_data.to_csv("raw_data.csv")
+    mutated_data["processingTime"] = mutated_data.apply(calc_processing_time, axis=1)
 
-    colin_data["resultedDate"] = pd.to_datetime(colin_data["resultedDate"])
+    mutated_data["resultedDate"] = pd.to_datetime(mutated_data["resultedDate"])
 
     # Convert processingTime to numeric
-    colin_data["processingTime"] = pd.to_numeric(
-        colin_data["processingTime"], errors="coerce"
+    mutated_data["processingTime"] = pd.to_numeric(
+        mutated_data["processingTime"], errors="coerce"
     )
 
     monthly_data = {}
     for month in months:
-        month_data = colin_data[
-            (colin_data["resultedDate"].dt.month == month)
-            & (colin_data["resultedDate"].dt.year == year)
+        month_data = mutated_data[
+            (mutated_data["resultedDate"].dt.month == month)
+            & (mutated_data["resultedDate"].dt.year == year)
         ]
         under_two = month_data[month_data["processingTime"] <= 2]
         two_to_four = month_data[
@@ -104,11 +103,13 @@ def process_data_for_months(df, year, months):
         total = month_data["processingTime"].count()
 
         monthly_data[month] = {
+            "Month": month,
             "Under Two": under_two.shape[0],
             "Two to Four": two_to_four.shape[0],
             "More than Four": more_than_four.shape[0],
             "Total": total,
         }
+        
 
     return pd.DataFrame(monthly_data).transpose()
 
@@ -124,11 +125,31 @@ def main():
     df = set_dates(df)
     # Specify the months you want to include
 
-    months_to_process = [1, 2, 3, 4, 5, 6, 7]
+    current_month = datetime.now().month
+    months_to_process = [current_month]
     summary_data = process_data_for_months(df, 2024, months_to_process)
+    all_months = list(range(1, current_month + 1))
+    all_data = process_data_for_months(df, 2024, all_months)
+    
+    messages = []
+    for index, row in summary_data.iterrows():
+        message = (
+            f"For month {row['Month']}, the kit processing results are:\n"
+            f"Under Two: {row['Under Two']} [{(row['Under Two'] / row['Total'] * 100).round(2)}%]\n"
+            f"Two to Four: {row['Two to Four']} [{(row['Two to Four'] / row['Total'] * 100).round(2)}%]\n"
+            f"More than Four: {row['More than Four']} [{(row['More than Four'] / row['Total'] * 100).round(2)}%]\n"
+            f"Total: {row['Total']}\n"
+        )
+        messages.append(message)
 
-    # Save to CSV
-    summary_data.to_csv("monthly_processing_time_summary.csv")
+    # Combine all messages into one string with the current date
+    current_date = datetime.today().strftime("%Y-%m-%d")
+    final_message = f"--- KITS RESULTED STATISTICS UP TO {current_date} ---\n\n" + "\n\nPlease see all data in CSV Below"
+    
+    summary_path = "monthly_processing_time_summary.csv"
+    all_data.to_csv(summary_path, index = False)
+
+    send_slack_message(final_message, summary_path)
 
 # executes main when running locally
 if __name__ == "__main__":
