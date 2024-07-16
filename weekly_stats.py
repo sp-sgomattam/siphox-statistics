@@ -144,7 +144,7 @@ def main():
 
     # Combine all messages into one string with the current date
     current_date = datetime.today().strftime("%Y-%m-%d")
-    final_message = f"--- KITS RESULTED STATISTICS UP TO {current_date} ---\n\n" + "\n\nPlease see all data in CSV Below"
+    final_message = f"--- KITS RESULTED STATISTICS UP TO {current_date} ---\n\n" + "\n".join(messages) + "\n\nPlease see all data in CSV Below"
     
     summary_path = "monthly_processing_time_summary.csv"
     all_data.to_csv(summary_path, index = False)
