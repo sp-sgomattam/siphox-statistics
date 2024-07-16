@@ -1,5 +1,4 @@
 import requests
-import json
 import base64
 
 # sends webhook to Zapier to then format and send email

@@ -198,7 +198,14 @@ def main():
     # send_email(message)
     return in_lab
 
+# Lambda handler function
+def lambda_handler(event, context):
+    data = main()
+    return {
+        'statusCode': 200,
+        'body': 'Process completed successfully'
+    }
 
-# executes main
+# executes main when running locally
 if __name__ == "__main__":
     data = main()

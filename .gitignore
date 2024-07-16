@@ -3,3 +3,4 @@ venv/
 all_data.csv
 __pycache__/
 utils/__pycache__/
+package

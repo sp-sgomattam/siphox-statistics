@@ -25,3 +25,11 @@ python usslstats.py
 ## Required in .env
 MONGO_URI, DB_NAME, COLLECTION_NAME, SLACK_TOKEN, USSL_CHANNEL_ID
 
+
+#### For lambda integration
+mkdir package
+pip install --target ./package -r requirements.txt
+Copy-Item -Path utils -Destination package/ -Recurse -Force
+Copy-Item -Path usslstats.py  -Destination package/ -Force
+Compress-Archive -Path package/* -DestinationPath my_lambda_deployment_package.zip   
+Then, send to lambda
