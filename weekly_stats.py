@@ -4,13 +4,9 @@ import numpy as np
 
 from utils.mongo_utils import connect_mongo, pull_mongo_data
 from utils.date_utils import (
-    convert_to_est,
     date_updated,
-    calc_diff_days,
-    calc_diff_days2,
 )
 from utils.slack_utils import send_slack_message
-from utils.zapier_utils import send_email
 from daily_stats import set_dates
 
 

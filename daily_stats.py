@@ -6,7 +6,6 @@ from utils.date_utils import (
     convert_to_est,
     date_updated,
     calc_diff_days,
-    calc_diff_days2,
 )
 from utils.slack_utils import send_slack_message
 from utils.zapier_utils import send_email
@@ -195,8 +194,8 @@ def main():
     message = generate_message(in_lab)
     
     # NOTE: ONLY UNCOMMENT THE FOLLOWING LINES IF YOU ARE READY TO SEND STATISTICS TO SLACK / EMAIL
-    send_slack_message(message, path0)
-    send_email(message, path0)
+    #send_slack_message(message, path0)
+    #send_email(message, path0)
     return in_lab
 
 # Lambda handler function
