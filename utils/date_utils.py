@@ -1,6 +1,19 @@
 from datetime import datetime, timedelta
 import numpy as np
 
+major_american_holidays = [
+    "2024-01-01",  # New Year's Day
+    "2024-01-15",  # Martin Luther King Jr. Day
+    "2024-02-19",  # Presidents' Day
+    "2024-05-27",  # Memorial Day
+    "2024-07-04",  # Independence Day
+    "2024-09-02",  # Labor Day
+    "2024-10-14",  # Columbus Day
+    "2024-11-11",  # Veterans Day
+    "2024-11-28",  # Thanksgiving Day
+    "2024-12-25",  # Christmas Day
+]
+
 # convert dates to est
 def convert_to_est(date, is_dst):
     hours_to_subtract = 4 if is_dst else 5
@@ -13,7 +26,7 @@ def date_updated(start_date, days_to_add):
     return new_date  
 
 # function that takes the updated date and calculates days since then
-def calc_diff_days(start_date, days_to_add, holidays=[]):
+def calc_diff_days(start_date, days_to_add, holidays=major_american_holidays):
     # Ensure start_date is a datetime object
     if isinstance(start_date, str):
         start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S.%f")
@@ -43,7 +56,7 @@ def calc_diff_days(start_date, days_to_add, holidays=[]):
     return round(total_days_fractional, 3)
 
 # function that takes the updated date and calculates days since then
-def calc_diff_days2(start_date, end_date, holidays=[]):
+def calc_diff_days2(start_date, end_date, holidays=major_american_holidays):
     # Ensure start_date is a datetime object
     if isinstance(start_date, str):
         start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S.%f")

@@ -1,0 +1,160 @@
+import pandas as pd
+from datetime import datetime
+import numpy as np
+import calendar
+from prepare_data import prepare_data
+from utils.slack_utils import send_slack_message
+
+# Function to process data for specified months of a given year
+def process_data_for_months(df, year, months):
+    monthly_data = {}
+
+    for month in months:
+        # Filter data for the given month and year
+        month_data = df[
+            ((df["receivedDate"].dt.month == month) & 
+            (df["receivedDate"].dt.year == year)) | 
+            ((df["rejectedDate"].dt.month == month) & 
+            (df["rejectedDate"].dt.year == year))
+        ]
+
+        # Calculate statistics for completed samples
+        completed_samples = month_data[(month_data['sampleResulted'] == True) | (month_data['sampleRejected'] == True)]
+        total_completed_samples = completed_samples.shape[0]
+        total_kits_resulted = completed_samples['sampleResulted'].sum()
+        total_kits_rejected = completed_samples['sampleRejected'].sum()
+        uncounted_kits = total_completed_samples - (total_kits_resulted + total_kits_rejected)
+        
+        # Generate warnings based on uncounted kits
+        warning = ""
+        if uncounted_kits > 0:
+            warning = f"WARNING: there are {uncounted_kits} samples in this data that are not registered or resulted"
+        elif uncounted_kits < 0:
+            warning = f"WARNING: there are {uncounted_kits * -1} samples in this data that are both registered and resulted"
+
+        # Calculate shipping statistics
+        shipped_samples = completed_samples[completed_samples['shippingTime'].notna()]
+        kits_shipped_usps = shipped_samples['shippingTime'].notna().sum()
+        avg_shipping_time = shipped_samples['shippingTime'].mean().round(2)
+        shipped_under_3 = shipped_samples[shipped_samples["shippingTime"] <= 3]['shippingTime'].notna().sum()
+        shipped_under_5 = shipped_samples[(shipped_samples["shippingTime"] <= 5) & (shipped_samples["shippingTime"] > 3)]['shippingTime'].notna().sum()
+        shipped_over_5 = shipped_samples[shipped_samples["shippingTime"] > 5]['shippingTime'].notna().sum()
+
+        # Calculate lab processing statistics
+        processed_samples = completed_samples[completed_samples['labProcessingTime'].notna()]
+        samples_processed_ussl = processed_samples['labProcessingTime'].notna().sum()
+        avg_lab_processing_time = processed_samples['labProcessingTime'].mean().round(2)
+        processed_under_2 = processed_samples[processed_samples["labProcessingTime"] <= 2]['labProcessingTime'].notna().sum()
+        processed_under_4 = processed_samples[(processed_samples["labProcessingTime"] <= 4) & (processed_samples["labProcessingTime"] > 2)]['labProcessingTime'].notna().sum()
+        processed_over_4 = processed_samples[processed_samples["labProcessingTime"] > 4]['labProcessingTime'].notna().sum()
+
+        # Calculate report publishing statistics
+        published_samples = completed_samples[completed_samples['reportPublishingTime'].notna()]
+        reports_published_siphox = published_samples['reportPublishingTime'].notna().sum()
+        avg_report_publishing_time = published_samples['reportPublishingTime'].mean().round(2)
+        published_under_2 = published_samples[published_samples["reportPublishingTime"] <= 2]['reportPublishingTime'].notna().sum()
+        published_over_2 = published_samples[published_samples["reportPublishingTime"] > 2]['reportPublishingTime'].notna().sum()
+
+        # Calculate total processing statistics
+        avg_total_processing_time = month_data['totalProcessingTime'].mean().round(2)
+        samples_overdue = completed_samples[completed_samples['sampleOverdue'] == True]
+        num_samples_overdue = samples_overdue['totalProcessingTime'].notna().sum()
+        overdue_under_7 = samples_overdue[(samples_overdue['totalProcessingTime'] < 7) & (samples_overdue['totalProcessingTime'] >= 5)]['totalProcessingTime'].notna().sum()
+        overdue_under_12 = samples_overdue[(samples_overdue['totalProcessingTime'] < 12) & (samples_overdue['totalProcessingTime'] >= 7)]['totalProcessingTime'].notna().sum()
+        overdue_max = samples_overdue[samples_overdue['totalProcessingTime'] >= 12]['totalProcessingTime'].notna().sum()
+
+        # Store monthly statistics
+        monthly_data[month] = {
+            "Month": int(month),
+            "total_completed_samples": total_completed_samples,
+            "total_kits_resulted": total_kits_resulted,
+            "total_kits_rejected": total_kits_rejected,
+            "kits_shipped_usps": kits_shipped_usps,
+            "avg_shipping_time": avg_shipping_time,
+            "shipped_under_3": shipped_under_3,
+            "shipped_under_5": shipped_under_5,
+            "shipped_over_5": shipped_over_5,
+            "samples_processed_ussl": samples_processed_ussl,
+            "avg_lab_processing_time": avg_lab_processing_time,
+            "processed_under_2": processed_under_2,
+            "processed_under_4": processed_under_4,
+            "processed_over_4": processed_over_4,
+            "reports_published_siphox": reports_published_siphox,
+            "avg_report_publishing_time": avg_report_publishing_time,
+            "published_under_2": published_under_2,
+            "published_over_2": published_over_2,
+            "avg_total_processing_time": avg_total_processing_time,
+            "num_samples_overdue": num_samples_overdue,
+            "overdue_under_7": overdue_under_7,
+            "overdue_under_12": overdue_under_12,
+            "overdue_max": overdue_max,
+            "warning": warning,
+        }
+
+    return pd.DataFrame(monthly_data).transpose()
+
+def main():
+    # Prepare data
+    df = prepare_data()
+
+    # Define the months to process
+    current_month = datetime.now().month
+    all_months = list(range(1, current_month + 1))
+    all_data = process_data_for_months(df, 2024, all_months)
+
+    # Generate message for the latest month's statistics
+    latest_row = all_data.iloc[-1]
+    message = f"""
+    ----------------------------------------------------------------------------------------------
+    For month {latest_row['Month']}, the kit processing results are:
+    ----------------------------------------------------------------------------------------------
+    *GENERAL STATISTICS*
+    Total Kits Processed: {latest_row['total_completed_samples']}
+    Kits Resulted: {latest_row['total_kits_resulted']}
+    Kits Rejected: {latest_row['total_kits_rejected']}
+    _{latest_row['warning']}_
+    ----------------------------------------------------------------------------------------------
+    *USPS SHIPPING*
+    Avg Shipping Time: {latest_row['avg_shipping_time']:.2f} days 
+    Shipped <= 3 Days: {latest_row['shipped_under_3']}
+    Shipped 3-5 Days: {latest_row['shipped_under_5']}
+    Shipped > 5 Days: {latest_row['shipped_over_5']}
+    ----------------------------------------------------------------------------------------------
+    *USSL PROCESSING*
+    Avg Lab Processing Time: {latest_row['avg_lab_processing_time']:.2f} days
+    Processed <= 2 Days: {latest_row['processed_under_2']}
+    Processed 2-4 Days: {latest_row['processed_under_4']}
+    Processed > 4 Days: {latest_row['processed_over_4']}
+    ----------------------------------------------------------------------------------------------
+    *SIPHOX PUBLISHING*
+    Avg Report Publishing Time: {latest_row['avg_report_publishing_time']:.2f} days
+    Published <= 2 Days:  {latest_row['published_under_2']}
+    Published > 2 Days:  {latest_row['published_over_2']}
+    ----------------------------------------------------------------------------------------------
+    *OVERDUE SAMPLES*
+    Avg Total Processing Time: {latest_row['avg_total_processing_time']:.2f} days
+    Number of Samples Overdue: {latest_row['num_samples_overdue']}
+    Overdue <= 7 Days: {latest_row['overdue_under_7']}
+    Overdue 7-12 Days: {latest_row['overdue_under_12']}
+    Overdue > 12 Days: {latest_row['overdue_max']}
+    ----------------------------------------------------------------------------------------------
+    """
+
+    # Generate final message with the date
+    current_date = datetime.today().strftime("%Y-%m-%d")
+    final_message = (
+        f"--- KITS RESULTED STATISTICS UP TO {current_date} ---\n\n"
+        + message
+        + "\n\nPlease see all data in CSV Below"
+    )
+
+    # Save the data to a CSV file
+    summary_path = "monthly_processing_time_summary.csv"
+    all_data.to_csv(summary_path, index=False)
+
+    # Send the message to Slack
+    send_slack_message(final_message, summary_path, "C07DE075ZLG")
+
+# Execute main function when running the script directly
+if __name__ == "__main__":
+    data = main()

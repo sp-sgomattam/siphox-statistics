@@ -1,8 +1,8 @@
-Month,Under Two,Two to Four,More than Four,Total
-1,650,111,12,773
-2,568,19,6,593
-3,480,140,104,724
-4,563,154,19,736
-5,313,262,148,723
-6,664,139,31,834
-7,275,11,13,299
+Month,total_completed_samples,total_kits_resulted,total_kits_rejected,kits_shipped_usps,avg_shipping_time,shipped_under_3,shipped_under_5,shipped_over_5,samples_processed_ussl,avg_lab_processing_time,processed_under_2,processed_under_4,processed_over_4,reports_published_siphox,avg_report_publishing_time,published_under_2,published_over_2,avg_total_processing_time,num_samples_overdue,overdue_under_7,overdue_under_12,overdue_max,warning
+1,917,739,178,917,1.75,784,76,57,914,3.39,554,210,150,711,0.67,687,24,5.4,180,93,65,22,
+2,824,670,154,824,2.32,690,81,53,824,4.25,467,159,198,648,0.67,640,8,7.08,176,51,94,31,
+3,847,693,154,847,2.72,630,146,71,847,3.26,385,253,209,669,1.29,599,70,6.55,428,238,155,35,
+4,862,752,111,862,9.93,486,180,196,861,9.16,310,314,237,732,0.96,677,55,15.12,572,194,302,76,WARNING: there are 1 samples in this data that are both registered and resulted
+5,856,755,102,856,3.7,637,139,80,856,14.75,281,294,281,741,1.11,660,81,20.99,482,206,214,62,WARNING: there are 1 samples in this data that are both registered and resulted
+6,812,730,82,812,3.93,572,162,78,811,2.24,525,191,95,660,0.88,633,27,6.19,277,161,90,26,
+7,478,424,55,478,5.47,379,46,53,448,3.35,304,64,80,393,0.72,384,9,7.55,107,49,37,21,WARNING: there are 1 samples in this data that are both registered and resulted
