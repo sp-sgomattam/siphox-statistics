@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 import calendar
+import os
 import matplotlib.pyplot as plt
 
 from prepare_data import prepare_data
@@ -30,9 +31,9 @@ def process_data_for_months(df, year, months):
         # Generate warnings based on uncounted kits
         warning = ""
         if uncounted_kits > 0:
-            warning = f"WARNING: there are {uncounted_kits} samples in this data that are not registered or resulted"
+            warning = f"WARNING: there are {uncounted_kits} samples in this data that are not resulted or rejected"
         elif uncounted_kits < 0:
-            warning = f"WARNING: there are {uncounted_kits * -1} samples in this data that are both registered and resulted"
+            warning = f"WARNING: there are {uncounted_kits * -1} samples in this data that are both resulted and rejected"
 
         # Calculate shipping statistics
         shipped_samples = completed_samples[completed_samples['shippingTime'].notna()]
@@ -204,7 +205,10 @@ def main():
     all_data.to_csv(summary_path, index=False)
 
     # Send the message to Slack
-    send_slack_message(final_message, [summary_path, image], "C07DE075ZLG")
+    SLACK_MONTHLY_TOKEN = os.getenv("SLACK_MONTHLY_TOKEN")
+    OPS_CHANNEL_ID = os.getenv("OPS_CHANNEL_ID")
+    TEST_CHANNEL_ID = os.getenv("TEST_CHANNEL_ID")
+    send_slack_message(SLACK_MONTHLY_TOKEN, final_message, [summary_path, image], TEST_CHANNEL_ID)
 
 # Execute main function when running the script directly
 if __name__ == "__main__":

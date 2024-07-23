@@ -1,5 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
+import os
 
 from prepare_data import prepare_data
 from utils.date_utils import calc_diff_days2
@@ -136,8 +137,11 @@ def main():
 
     # NOTE: ONLY UNCOMMENT THE FOLLOWING LINES IF YOU ARE READY TO SEND STATISTICS TO SLACK / EMAIL
     # test id: C07DE075ZLG
-    send_slack_message(message, [path0], "C07DE075ZLG")
-    #send_slack_message(message, path0)
+    
+    SLACK_DAILY_TOKEN = os.getenv("SLACK_DAILY_TOKEN")
+    TEST_CHANNEL_ID = os.getenv("TEST_CHANNEL_ID")
+    USSL_CHANNEL_ID = os.getenv("USSL_CHANNEL_ID")
+    send_slack_message(SLACK_DAILY_TOKEN, message, [path0], TEST_CHANNEL_ID)
     #send_email(message, path0)
     return in_lab
 

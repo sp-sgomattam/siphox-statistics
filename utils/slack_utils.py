@@ -5,7 +5,6 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-SLACK_TOKEN = os.getenv("SLACK_TOKEN")
 USSL_CHANNEL_ID = os.getenv("USSL_CHANNEL_ID")
 
 
@@ -16,8 +15,8 @@ def check_slack_connection(slack_client):
     print(f"App's bot user: {bot_user_id}")
 
 # sends slack message
-def send_slack_message(message, input_files, slack_channel_id=USSL_CHANNEL_ID):
-    slack_client = WebClient(token=SLACK_TOKEN)
+def send_slack_message(token, message, input_files, slack_channel_id=USSL_CHANNEL_ID):
+    slack_client = WebClient(token)
     check_slack_connection(slack_client)
 
     file_ids = []
