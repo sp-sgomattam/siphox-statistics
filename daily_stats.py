@@ -136,7 +136,7 @@ def main():
 
     # NOTE: ONLY UNCOMMENT THE FOLLOWING LINES IF YOU ARE READY TO SEND STATISTICS TO SLACK / EMAIL
     # test id: C07DE075ZLG
-    send_slack_message(message, path0, "C07DE075ZLG")
+    send_slack_message(message, [path0], "C07DE075ZLG")
     #send_slack_message(message, path0)
     #send_email(message, path0)
     return in_lab

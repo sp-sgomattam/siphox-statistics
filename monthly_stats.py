@@ -185,7 +185,7 @@ def main():
     all_data = process_data_for_months(df, 2024, all_months)
     
     # Plot Data
-    plot_boxplots(df, 2024, current_month)
+    image = plot_boxplots(df, 2024, current_month)
 
     # Generate message for the latest month's statistics
     latest_row = all_data.iloc[-1]
@@ -196,7 +196,7 @@ def main():
     final_message = (
         f"--- KITS RESULTED STATISTICS UP TO {current_date} ---\n\n"
         + message
-        + "\n\nPlease see all data in CSV Below"
+        + "\n\nPlease see all data and visualizations below"
     )
 
     # Save the data to a CSV file
@@ -204,7 +204,7 @@ def main():
     all_data.to_csv(summary_path, index=False)
 
     # Send the message to Slack
-    #send_slack_message(final_message, summary_path, "C07DE075ZLG")
+    send_slack_message(final_message, [summary_path, image], "C07DE075ZLG")
 
 # Execute main function when running the script directly
 if __name__ == "__main__":
