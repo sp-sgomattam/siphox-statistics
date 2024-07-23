@@ -2,6 +2,8 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 import calendar
+import matplotlib.pyplot as plt
+
 from prepare_data import prepare_data
 from utils.slack_utils import send_slack_message
 
@@ -93,18 +95,50 @@ def process_data_for_months(df, year, months):
 
     return pd.DataFrame(monthly_data).transpose()
 
-def main():
-    # Prepare data
-    df = prepare_data()
+import matplotlib.pyplot as plt
 
-    # Define the months to process
-    current_month = datetime.now().month
-    all_months = list(range(1, current_month + 1))
-    all_data = process_data_for_months(df, 2024, all_months)
+def plot_boxplots(df, year, month):
+    # Filter data for the given month and year
+    current_month_data = df[
+        ((df["receivedDate"].dt.month == month) & 
+        (df["receivedDate"].dt.year == year)) | 
+        ((df["rejectedDate"].dt.month == month) & 
+        (df["rejectedDate"].dt.year == year))
+    ]
+    
+    completed_samples = current_month_data[(current_month_data['sampleResulted'] == True) | (current_month_data['sampleRejected'] == True)]
+    
+    fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(15, 10))
 
-    # Generate message for the latest month's statistics
-    latest_row = all_data.iloc[-1]
-    message = f"""
+    # Set the title for the entire figure
+    fig.suptitle(f'Month {month} Processing Times', fontsize=16)
+
+    # Plot USPS Shipping Times
+    axes[0].boxplot(completed_samples['shippingTime'].dropna(), vert=False, patch_artist=True, showfliers=False)
+    axes[0].set_xlabel('Shipping Time (days)')
+    axes[0].set_title('USPS Shipping Times')
+
+    # Plot USSL Lab Processing Times
+    axes[1].boxplot(completed_samples['labProcessingTime'].dropna(), vert=False, patch_artist=True, showfliers=False)
+    axes[1].set_xlabel('Lab Processing Time (days)')
+    axes[1].set_title('USSL Lab Processing Times')
+
+    # Plot SiPhox Report Publishing Times
+    axes[2].boxplot(completed_samples['reportPublishingTime'].dropna(), vert=False, patch_artist=True, showfliers=False)
+    axes[2].set_xlabel('Report Publishing Time (days)')
+    axes[2].set_title('SiPhox Report Publishing Times')
+
+    plt.subplots_adjust(hspace=0.5)
+    # Save the plot as an image
+    image_path = 'monthly_processing_times.png'
+    plt.savefig(image_path)
+    plt.close()
+
+    return image_path
+
+    
+def generate_message(latest_row):
+    return f"""
     ----------------------------------------------------------------------------------------------
     For month {latest_row['Month']}, the kit processing results are:
     ----------------------------------------------------------------------------------------------
@@ -139,6 +173,23 @@ def main():
     Overdue > 12 Days: {latest_row['overdue_max']}
     ----------------------------------------------------------------------------------------------
     """
+    
+
+def main():
+    # Prepare data
+    df = prepare_data()
+
+    # Define the months to process
+    current_month = datetime.now().month
+    all_months = list(range(1, current_month + 1))
+    all_data = process_data_for_months(df, 2024, all_months)
+    
+    # Plot Data
+    plot_boxplots(df, 2024, current_month)
+
+    # Generate message for the latest month's statistics
+    latest_row = all_data.iloc[-1]
+    message = generate_message(latest_row)
 
     # Generate final message with the date
     current_date = datetime.today().strftime("%Y-%m-%d")
@@ -153,7 +204,7 @@ def main():
     all_data.to_csv(summary_path, index=False)
 
     # Send the message to Slack
-    send_slack_message(final_message, summary_path, "C07DE075ZLG")
+    #send_slack_message(final_message, summary_path, "C07DE075ZLG")
 
 # Execute main function when running the script directly
 if __name__ == "__main__":

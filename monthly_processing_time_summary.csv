@@ -5,4 +5,4 @@ Month,total_completed_samples,total_kits_resulted,total_kits_rejected,kits_shipp
 4,862,752,111,862,9.93,486,180,196,861,9.16,310,314,237,732,0.96,677,55,15.12,572,194,302,76,WARNING: there are 1 samples in this data that are both registered and resulted
 5,856,755,102,856,3.7,637,139,80,856,14.75,281,294,281,741,1.11,660,81,20.99,482,206,214,62,WARNING: there are 1 samples in this data that are both registered and resulted
 6,812,730,82,812,3.93,572,162,78,811,2.24,525,191,95,660,0.88,633,27,6.19,277,161,90,26,
-7,478,424,55,478,5.47,379,46,53,448,3.35,304,64,80,393,0.72,384,9,7.55,107,49,37,21,WARNING: there are 1 samples in this data that are both registered and resulted
+7,525,469,57,525,5.85,410,48,67,495,3.29,333,73,89,429,0.72,419,10,8.14,123,54,39,30,WARNING: there are 1 samples in this data that are both registered and resulted
