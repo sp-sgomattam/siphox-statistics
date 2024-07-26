@@ -29,4 +29,4 @@ jobs:
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
       run: |
-        python monthly_stats.py
+        python daily_stats.py
