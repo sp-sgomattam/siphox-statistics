@@ -129,7 +129,7 @@ def main():
     in_lab = filter_daily(df)
     
     # to csv
-    path0 = f"all_data.csv"
+    path0 = r"files\all_data.csv"
     in_lab.to_csv(path0, index=False)
 
     # send data

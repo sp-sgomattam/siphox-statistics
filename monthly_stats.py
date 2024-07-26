@@ -131,7 +131,7 @@ def plot_boxplots(df, year, month):
 
     plt.subplots_adjust(hspace=0.5)
     # Save the plot as an image
-    image_path = 'monthly_processing_times.png'
+    image_path = r'files\monthly_processing_times.png'
     plt.savefig(image_path)
     plt.close()
 
@@ -201,7 +201,7 @@ def main():
     )
 
     # Save the data to a CSV file
-    summary_path = "monthly_processing_time_summary.csv"
+    summary_path = r"files\monthly_processing_time_summary.csv"
     all_data.to_csv(summary_path, index=False)
 
     # Send the message to Slack

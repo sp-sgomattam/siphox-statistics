@@ -37,7 +37,7 @@ def filter_vals(df):
     return data
 
 # Function to apply various calculations and transformations to the DataFrame
-def apply_functions_optimized(df):
+def apply_functions(df):
     event_names = [
         ("kitRegistered", "kitRegisteredDiff", "registeredDate", "daysSinceRegistered"),
         ("sampleInTransit", "sampleInTransitDiff", "droppedOffDate", "daysSinceTransit"),
@@ -72,7 +72,6 @@ def apply_functions_optimized(df):
     # Calculate various processing times
     df["shippingTime"] = df.apply(lambda row: calculate_times(row, "droppedOffDate", "deliveredDate") or calculate_times(row, "droppedOffDate", "receivedDate"), axis=1)
     df["labProcessingTime"] = df.apply(lambda row: calculate_times(row, "deliveredDate", "resultedDate") or calculate_times(row, "deliveredDate", "rejectedDate") or calculate_times(row, "receivedDate", "resultedDate") or calculate_times(row, "receivedDate", "rejectedDate"), axis=1)
-    df["sampleProcessingTime"] = df.apply(lambda row: calculate_times(row, "droppedOffDate", "resultedDate") or calculate_times(row, "droppedOffDate", "rejectedDate"), axis=1)
     df["reportPublishingTime"] = df.apply(lambda row: calculate_times(row, "resultedDate", "publishedDate"), axis=1)
     df["totalProcessingTime"] = df.apply(lambda row: calculate_times(row, "droppedOffDate", "publishedDate"), axis=1)
 
@@ -114,6 +113,6 @@ def prepare_data():
     df = pd.DataFrame(docs)
     df = set_dates(df)
     data = filter_vals(df)
-    data = apply_functions_optimized(data)
+    data = apply_functions(data)
     data = clean_lab_data(data)
     return data
