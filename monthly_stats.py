@@ -1,6 +1,5 @@
 import pandas as pd
 from datetime import datetime
-import numpy as np
 import calendar
 import os
 import matplotlib.pyplot as plt
@@ -174,41 +173,46 @@ def generate_message(latest_row):
     Overdue > 12 Days: {latest_row['overdue_max']}
     ----------------------------------------------------------------------------------------------
     """
-    
+
+def is_last_day_of_month():
+    today = datetime.today()
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    return today.day == last_day    
 
 def main():
-    # Prepare data
-    df = prepare_data()
+    if is_last_day_of_month():
+        # Prepare data
+        df = prepare_data()
 
-    # Define the months to process
-    current_month = datetime.now().month
-    all_months = list(range(1, current_month + 1))
-    all_data = process_data_for_months(df, 2024, all_months)
+        # Define the months to process
+        current_month = datetime.now().month
+        all_months = list(range(1, current_month + 1))
+        all_data = process_data_for_months(df, 2024, all_months)
     
-    # Plot Data
-    image = plot_boxplots(df, 2024, current_month)
+        # Plot Data
+        image = plot_boxplots(df, 2024, current_month)
 
-    # Generate message for the latest month's statistics
-    latest_row = all_data.iloc[-1]
-    message = generate_message(latest_row)
+        # Generate message for the latest month's statistics
+        latest_row = all_data.iloc[-1]
+        message = generate_message(latest_row)
 
-    # Generate final message with the date
-    current_date = datetime.today().strftime("%Y-%m-%d")
-    final_message = (
-        f"--- KITS RESULTED STATISTICS UP TO {current_date} ---\n\n"
-        + message
-        + "\n\nPlease see all data and visualizations below"
-    )
+        # Generate final message with the date
+        current_date = datetime.today().strftime("%Y-%m-%d")
+        final_message = (
+            f"--- KITS RESULTED STATISTICS UP TO {current_date} ---\n\n"
+            + message
+            + "\n\nPlease see all data and visualizations below"
+        )
 
-    # Save the data to a CSV file
-    summary_path = r"files\monthly_processing_time_summary.csv"
-    all_data.to_csv(summary_path, index=False)
+        # Save the data to a CSV file
+        summary_path = r"files\monthly_processing_time_summary.csv"
+        all_data.to_csv(summary_path, index=False)
 
-    # Send the message to Slack
-    SLACK_MONTHLY_TOKEN = os.getenv("SLACK_MONTHLY_TOKEN")
-    OPS_CHANNEL_ID = os.getenv("OPS_CHANNEL_ID")
-    TEST_CHANNEL_ID = os.getenv("TEST_CHANNEL_ID")
-    send_slack_message(SLACK_MONTHLY_TOKEN, final_message, [summary_path, image], TEST_CHANNEL_ID)
+        # Send the message to Slack
+        SLACK_MONTHLY_TOKEN = os.getenv("SLACK_MONTHLY_TOKEN")
+        OPS_CHANNEL_ID = os.getenv("OPS_CHANNEL_ID")
+        TEST_CHANNEL_ID = os.getenv("TEST_CHANNEL_ID")
+        send_slack_message(SLACK_MONTHLY_TOKEN, final_message, [summary_path, image], TEST_CHANNEL_ID)
 
 # Execute main function when running the script directly
 if __name__ == "__main__":
