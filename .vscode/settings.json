@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "notna"
-    ]
+    ],
+    "python.analysis.typeCheckingMode": "basic"
 }

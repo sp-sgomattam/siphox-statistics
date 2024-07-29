@@ -1,9 +1,9 @@
 name: Run Python Script
 
 on: 
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
   run-script:
@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.10.13'
+        python-version: '3.12.2'
 
     - name: Install dependencies
       run: |
@@ -25,6 +25,16 @@ jobs:
 
     - name: Run Python script
       env:
-        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        ATLAS_PROJECT_ID: ${{ secrets.ATLAS_PROJECT_ID }}
+        ATLAS_PUBLIC_KEY: ${{ secrets.ATLAS_PUBLIC_KEY }}
+        ATLAS_PRIVATE_KEY: ${{ secrets.ATLAS_PRIVATE_KEY }}
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        COLLECTION_NAME: ${{ secrets.COLLECTION_NAME }}
+        SLACK_MONTHLY_TOKEN: ${{ secrets.SLACK_MONTHLY_TOKEN }}
+        SLACK_DAILY_TOKEN: ${{ secrets.SLACK_DAILY_TOKEN }}
+        USSL_CHANNEL_ID: ${{ secrets.USSL_CHANNEL_ID }}
+        OPS_CHANNEL_ID: ${{ secrets.OPS_CHANNEL_ID }}
+        TEST_CHANNEL_ID: ${{ secrets.TEST_CHANNEL_ID }}
       run: |
         python daily_stats.py
