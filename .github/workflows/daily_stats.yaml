@@ -1,0 +1,61 @@
+name: Run Daily Statistics Script
+
+on: 
+  schedule:
+    - cron: '0 18 * * *' # Runs daily at 1 PM EST (UTC-5)
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12.2'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Get Current IP and Whitelist
+      run: |
+        CURRENT_IP=$(curl -s http://api.ipify.org)
+        DELETE_AFTER_DATE=$(date -u -d '+15 minutes' '+%Y-%m-%dT%H:%M:%SZ')
+        curl --location "https://cloud.mongodb.com/api/atlas/v2/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList" \
+        --header "Content-Type: application/json" \
+        --header "Accept: application/vnd.atlas.2023-02-01+json" \
+        --digest -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
+        --data "[
+            {
+                \"ipAddress\": \"$CURRENT_IP/32\",
+                \"comment\": \"GitHub Action IP Whitelist\",
+                \"deleteAfterDate\": \"$DELETE_AFTER_DATE\"
+            }
+        ]"
+        
+    - name: Wait for IP to be whitelisted
+      run: |
+        echo "Waiting for 10 seconds..."
+        sleep 10
+
+    - name: Run Python script
+      env:
+        ATLAS_PROJECT_ID: ${{ secrets.ATLAS_PROJECT_ID }}
+        ATLAS_PUBLIC_KEY: ${{ secrets.ATLAS_PUBLIC_KEY }}
+        ATLAS_PRIVATE_KEY: ${{ secrets.ATLAS_PRIVATE_KEY }}
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        COLLECTION_NAME: ${{ secrets.COLLECTION_NAME }}
+        SLACK_MONTHLY_TOKEN: ${{ secrets.SLACK_MONTHLY_TOKEN }}
+        SLACK_DAILY_TOKEN: ${{ secrets.SLACK_DAILY_TOKEN }}
+        USSL_CHANNEL_ID: ${{ secrets.USSL_CHANNEL_ID }}
+        OPS_CHANNEL_ID: ${{ secrets.OPS_CHANNEL_ID }}
+        TEST_CHANNEL_ID: ${{ secrets.TEST_CHANNEL_ID }}
+      run: |
+        python daily_stats.py

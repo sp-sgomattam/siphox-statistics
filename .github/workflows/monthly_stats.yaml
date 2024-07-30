@@ -1,12 +1,12 @@
-name: Run Python Script
+name: Run Monthly Stats
 
 on: 
   schedule:
-    - cron: '0 18 * * *' # Runs daily at 1 PM EST (UTC-5)
+    - cron: '0 18 1 * *' # Runs monthly on the 1st at 1 PM EST (UTC-5)
   workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
-  run-script:
+  run-monthly-stats:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,7 +44,7 @@ jobs:
         echo "Waiting for 10 seconds..."
         sleep 10
 
-    - name: Run Python script
+    - name: Run Monthly Stats Script
       env:
         ATLAS_PROJECT_ID: ${{ secrets.ATLAS_PROJECT_ID }}
         ATLAS_PUBLIC_KEY: ${{ secrets.ATLAS_PUBLIC_KEY }}
@@ -58,4 +58,4 @@ jobs:
         OPS_CHANNEL_ID: ${{ secrets.OPS_CHANNEL_ID }}
         TEST_CHANNEL_ID: ${{ secrets.TEST_CHANNEL_ID }}
       run: |
-        python daily_stats.py
+        python monthly_stats.py
