@@ -181,12 +181,12 @@ def main():
     df = prepare_data()
 
     # Define the months to process
-    current_month = datetime.now().month
-    all_months = list(range(1, current_month + 1))
+    last_month = datetime.now().month - 1
+    all_months = list(range(1, last_month + 1))
     all_data = process_data_for_months(df, 2024, all_months)
     
     # Plot Data
-    image = plot_boxplots(df, 2024, current_month)
+    image = plot_boxplots(df, 2024, last_month)
 
     # Generate message for the latest month's statistics
     latest_row = all_data.iloc[-1]
