@@ -1,4 +1,4 @@
-name: Run Daily Statistics Script
+name: Run Daily Statistics
 
 on: 
   schedule:
