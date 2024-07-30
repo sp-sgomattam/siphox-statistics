@@ -1,7 +1,7 @@
-# ussl-daily-stats
+# SIPHOX STATISTICS 
 
 # Overveiew
-This repo calculates SiPhox <> SPOT <> USSL Processing Times and has functionality for data cleaning, transformation, and sending the results via Slack and email.
+This repo calculates SiPhox processing statistics of multiple mediums and timeframes. Contact sp-sgomattam with questions/comments/concerns.
 
 ## Prerequisites
 - Python 3.10 or later
@@ -15,21 +15,25 @@ This repo calculates SiPhox <> SPOT <> USSL Processing Times and has functionali
    ```
 2. **Create and activate virtual environment:**
    python -m venv venv
-   .\venv\Scripts\Activate.ps1
+   .\venv\Scripts\Activate
 3. **Install Dependencies**
     pip install -r requirements.txt
 
 ## Usage
-python usslstats.py
+python daily_stats.py ~ for daily stats
+python monthly_stats.py ~ for monthly stats
+streamlit dashboard.py ~ for dashboard [IN PROGRESS...]
 
 ## Required in .env
-MONGO_URI, DB_NAME, COLLECTION_NAME, SLACK_TOKEN, USSL_CHANNEL_ID
+- MONGO_URI
+- DB_NAME
+- COLLECTION_NAME
+- SLACK_MONTHLY_TOKEN
+- SLACK_DAILY_TOKEN
+- USSL_CHANNEL_ID
+- OPS_CHANNEL_ID
+- TEST_CHANNEL_ID
+- ATLAS_PUBLIC_KEY
+- ATLAS_PRIVATE_KEY 
+- ATLAS_PROJECT_ID
 
-
-#### For lambda integration
-mkdir package
-pip install --target ./package -r requirements.txt
-Copy-Item -Path utils -Destination package/ -Recurse -Force
-Copy-Item -Path usslstats.py  -Destination package/ -Force
-Compress-Archive -Path package/* -DestinationPath my_lambda_deployment_package.zip   
-Then, send to lambda
