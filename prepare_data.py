@@ -108,7 +108,6 @@ def clean_lab_data(in_lab):
 # Main function to prepare data
 @lru_cache(maxsize=None)
 def prepare_data():
-    set_keys()
     client = connect_mongo()
     docs = pull_mongo_data(client)
     df = pd.DataFrame(docs)

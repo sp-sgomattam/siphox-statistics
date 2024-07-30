@@ -23,6 +23,26 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Get Current IP and Whitelist
+      run: |
+        CURRENT_IP=$(curl -s http://api.ipify.org)
+        curl --location "https://cloud.mongodb.com/api/atlas/v2/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList" \
+        --header "Content-Type: application/json" \
+        --header "Accept: application/vnd.atlas.2023-02-01+json" \
+        --digest -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
+        --data "[
+            {
+                \"ipAddress\": \"$CURRENT_IP/32\",
+                \"comment\": \"GitHub Action IP Whitelist\",
+                \"deleteAfterDate\": \"2024-07-30T16:00:00Z\"
+            }
+        ]"
+        
+    - name: Wait for IP to be whitelisted
+      run: |
+        echo "Waiting for 10 seconds..."
+        sleep 10
+
     - name: Run Python script
       env:
         ATLAS_PROJECT_ID: ${{ secrets.ATLAS_PROJECT_ID }}
