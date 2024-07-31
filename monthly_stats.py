@@ -179,6 +179,16 @@ def generate_message(latest_row):
 def main():
     # Prepare data
     df = prepare_data()
+    
+    df = df[
+        ~df["spotSku"].isin(
+            [
+                "quantify_cortisol_kit",
+                "quantify_dna_methylation_kit",
+                "quantify_microtainer_collection_kit",
+            ]
+        )
+    ]
 
     # Define the months to process
     last_month = datetime.now().month - 1

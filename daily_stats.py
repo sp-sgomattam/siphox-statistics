@@ -37,6 +37,16 @@ def filter_daily(df):
     df = df[df["daysSinceDelivered"] < 30]
     df = df[df["droppedOffDate"] > two_months_ago]
     
+    df = df[
+        ~df["spotSku"].isin(
+            [
+                "quantify_cortisol_kit",
+                "quantify_dna_methylation_kit",
+                "quantify_microtainer_collection_kit",
+            ]
+        )
+    ]
+    
     return df
 
 # sanity check to ensure statistics are in order
@@ -141,8 +151,8 @@ def main():
     SLACK_DAILY_TOKEN = os.getenv("SLACK_DAILY_TOKEN")
     TEST_CHANNEL_ID = os.getenv("TEST_CHANNEL_ID")
     USSL_CHANNEL_ID = os.getenv("USSL_CHANNEL_ID")
-    send_slack_message(SLACK_DAILY_TOKEN, message, [path0], USSL_CHANNEL_ID)
-    #send_email(message, path0)
+    send_slack_message(SLACK_DAILY_TOKEN, message, [path0], TEST_CHANNEL_ID)
+    send_email(message, path0)
     return in_lab
 
 

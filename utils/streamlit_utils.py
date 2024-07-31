@@ -1,7 +1,10 @@
 import streamlit as st
+import pandas as pd
 
 def generate_dictionary(df):
     # Sidebar widgets
+    st.sidebar.header("General Filters")
+    
     order_id = st.sidebar.text_input('Order ID')
     sample_id = st.sidebar.text_input('Sample ID')
     
@@ -9,9 +12,14 @@ def generate_dictionary(df):
         'Business Key',
         options=df['businessKey'].unique().tolist(),
     )
-
+    
     spot_sku = st.sidebar.multiselect(
         'Spot SKU',
+        options=df['spotSku'].unique().tolist(),
+    )
+
+    spot_sku_type = st.sidebar.multiselect(
+        'Spot SKU Type',
         options=df['spotSkuType'].unique().tolist(),
     )
 
@@ -19,116 +27,139 @@ def generate_dictionary(df):
         'Country',
         options=df['country'].unique().tolist(),
     )
+    
+    st.sidebar.header("Date Filters")
+
+    # Multi-select for years and months
+    years = list(range(2020, 2025))
+    months = list(range(1, 13))
+    
+    selected_years = st.sidebar.multiselect("Select Years for Sample Delivered/Received", options=years)
+    selected_months = st.sidebar.multiselect("Select Months for Sample Delivered/Received", options=months, format_func=lambda x: f"{x:02d}")
+
+    st.sidebar.header("Time Filters")
+    st.sidebar.write("*Note that these filters only show items which meet the criteria. Ex: Lab Processing Time only shows items which have been processed by USSL*")
+
+    def range_input(label, min_value, max_value):
+        min_val = st.sidebar.number_input(f"Min {label}", value=min_value)
+        max_val = st.sidebar.number_input(f"Max {label}", value=max_value)
+        return min_val, max_val
+
+    shipping_time = st.sidebar.checkbox('USPS Shipping Time')
+    lab_processing_time = st.sidebar.checkbox('USSL Processing Time')
+    report_publishing_time = st.sidebar.checkbox('SiPhox Publishing Time')
+    total_processing_time = st.sidebar.checkbox('Total Processing Time')
+
+    range_columns = {
+        "shippingTime": range_input('Shipping Time', df['shippingTime'].min(), df['shippingTime'].max()) if shipping_time else (None, None),
+        "labProcessingTime": range_input('Lab Processing Time', df['labProcessingTime'].min(), df['labProcessingTime'].max()) if lab_processing_time else (None, None),
+        "reportPublishingTime": range_input('Report Publishing Time', df['reportPublishingTime'].min(), df['reportPublishingTime'].max()) if report_publishing_time else (None, None),
+        "totalProcessingTime": range_input('Total Processing Time', df['totalProcessingTime'].min(), df['totalProcessingTime'].max()) if total_processing_time else (None, None)
+    }
+
+    st.sidebar.header("Other")
+
+    # Checkbox for filtering by event
+    filter_by_event = st.sidebar.checkbox("Filter by Individual Event")
+
+    if filter_by_event:
+        def boolean_select(label):
+            return st.sidebar.selectbox(label, options=['ALL', 'True', 'False'])
+
+        kit_registered = boolean_select('Kit Registered')
+        sample_delivered = boolean_select('Sample Delivered')
+        sample_received = boolean_select('Sample Received')
+        sample_rejected = boolean_select('Sample Rejected')
+        sample_resulted = boolean_select('Sample Resulted')
+        order_published = boolean_select('Order Published')
+        sample_overdue = boolean_select('Sample Overdue')
+        sample_in_transit = boolean_select('Sample In Transit')
+        sample_processed = boolean_select('Sample Processed')
+    else:
+        kit_registered = sample_delivered = sample_received = sample_rejected = sample_resulted = order_published = sample_overdue = sample_in_transit = sample_processed = None
 
     # Initialize the dictionary
     data_dict = {
-        "orderID": None,
-        "sampleID": None,
-        "businessKey": None,
-        "country": None,
-        "spotSkuType": None,
+        "orderID": order_id,
+        "sampleID": sample_id,
+        "businessKey": business_key,
+        "country": country,
+        "spotSku": spot_sku,
+        "spotSkuType": spot_sku_type,
         "createdDate": None,
-        "kitRegistered": None,
+        "kitRegistered": kit_registered,
         "registeredDate": None,
         "targetDate": None,
-        "sampleOverdue": None,
-        "sampleInTransit": None,
+        "sampleOverdue": sample_overdue,
+        "sampleInTransit": sample_in_transit,
         "droppedOffDate": None,
-        "sampleDelivered": None,
+        "sampleDelivered": sample_delivered,
         "deliveredDate": None,
-        "sampleReceived": None,
+        "sampleReceived": sample_received,
         "receivedDate": None,
-        "sampleProcessed": None,
-        "sampleResulted": None,
+        "sampleProcessed": sample_processed,
+        "sampleResulted": sample_resulted,
         "resultedDate": None,
-        "sampleRejected": None,
+        "sampleRejected": sample_rejected,
         "rejectedDate": None,
-        "orderPublished": None,
+        "orderPublished": order_published,
         "publishedDate": None,
-        "shippingTime": None,
-        "labProcessingTime": None,
-        "reportPublishingTime": None,
-        "totalProcessingTime": None
+        "shippingTime": range_columns["shippingTime"],
+        "labProcessingTime": range_columns["labProcessingTime"],
+        "reportPublishingTime": range_columns["reportPublishingTime"],
+        "totalProcessingTime": range_columns["totalProcessingTime"],
+        "selectedYears": selected_years,  # Include the selected years in the dictionary
+        "selectedMonths": selected_months  # Include the selected months in the dictionary
     }
 
     if df.empty:
         st.sidebar.error("The DataFrame is empty. Please adjust the filters or data source.")
         return data_dict
 
-    # Check if each column has True values
-    has_sample_delivered = df['sampleDelivered'].eq(True).any()
-    has_sample_received = df['sampleReceived'].eq(True).any()
-    has_sample_rejected = df['sampleRejected'].eq(True).any()
-    has_sample_resulted = df['sampleResulted'].eq(True).any()
-
-    # Individual date range selectors and days___Diff sliders
-    filter_delivered = st.sidebar.checkbox('Filter by Sample Delivered', disabled=df.empty or not has_sample_delivered)
-    filter_received = st.sidebar.checkbox('Filter by Sample Received', disabled=df.empty or not has_sample_received)
-    filter_rejected = st.sidebar.checkbox('Filter by Sample Rejected', disabled=df.empty or not has_sample_rejected)
-    filter_resulted = st.sidebar.checkbox('Filter by Sample Resulted', disabled=df.empty or not has_sample_resulted)
-
-    if not has_sample_delivered:
-        st.sidebar.error("No data available for 'Sample Delivered'.")
-    elif filter_delivered:
-        data_dict["deliveredDateRange"] = st.sidebar.date_input(
-            "Delivered Date Range",
-            value=(df["deliveredDate"].min(), df["deliveredDate"].max()),
-            help="Select a single date or a range of dates"
-        )
-        data_dict["daysDeliveredDiff"] = st.sidebar.slider(
-            "Days Delivered Diff",
-            min_value=0.0,
-            max_value=float(df["daysDeliveredDiff"].max(skipna=True)),
-            value=(0.0, float(df["daysDeliveredDiff"].max(skipna=True))),
-            step=0.1
-        )
-
-    if not has_sample_received:
-        st.sidebar.error("No data available for 'Sample Received'.")
-    elif filter_received:
-        data_dict["receivedDateRange"] = st.sidebar.date_input(
-            "Received Date Range",
-            value=(df["receivedDate"].min(), df["receivedDate"].max()),
-            help="Select a single date or a range of dates"
-        )
-        data_dict["daysReceivedDiff"] = st.sidebar.slider(
-            "Days Received Diff",
-            min_value=0.0,
-            max_value=float(df["daysReceivedDiff"].max(skipna=True)),
-            value=(0.0, float(df["daysReceivedDiff"].max(skipna=True))),
-            step=0.1
-        )
-        
-    if not has_sample_rejected:
-        st.sidebar.error("No data available for 'Sample Rejected'.")
-    elif filter_rejected:
-        data_dict["sampleRejected"] = True
-
-    if not has_sample_resulted:
-        st.sidebar.error("No data available for 'Sample Resulted'.")
-    elif filter_resulted:
-        data_dict["resultedDateRange"] = st.sidebar.date_input(
-            "Resulted Date Range",
-            value=(df["resultedDate"].min(), df["resultedDate"].max()),
-            help="Select a single date or a range of dates"
-        )
-        data_dict["daysResultedDiff"] = st.sidebar.slider(
-            "Days Resulted Diff",
-            min_value=0.0,
-            max_value=float(df["daysResultedDiff"].max(skipna=True)),
-            value=(0.0, float(df["daysResultedDiff"].max(skipna=True))),
-            step=0.1
-        )
-        
-
-    # Unified date range selector if all checkboxes are checked
-    if filter_delivered and filter_received and filter_resulted and has_sample_delivered and has_sample_received and has_sample_resulted:
-        st.sidebar.markdown("### Unified Date Filter")
-        data_dict["unifiedDateRange"] = st.sidebar.date_input(
-            "Unified Date Range",
-            value=(df[['deliveredDate', 'receivedDate', 'resultedDate']].min().min(), 
-                df[['deliveredDate', 'receivedDate', 'resultedDate']].max().max()),
-            help="Select a single date or a range of dates"
-        )
-    
     return data_dict
+
+def filter_dataframe(df, filters):
+    # Ensure date columns are in datetime format
+    if "sampleDelivered" in df.columns:
+        df['sampleDelivered'] = pd.to_datetime(df['sampleDelivered'], errors='coerce')
+    if "sampleReceived" in df.columns:
+        df['sampleReceived'] = pd.to_datetime(df['sampleReceived'], errors='coerce')
+
+    if filters["orderID"]:
+        df = df[df["orderID"].str.contains(filters["orderID"], na=False)]
+    if filters["sampleID"]:
+        df = df[df["sampleID"].str.contains(filters["sampleID"], na=False)]
+    if filters["businessKey"]:
+        df = df[df["businessKey"].isin(filters["businessKey"])]
+    if filters["country"]:
+        df = df[df["country"].isin(filters["country"])]
+    if filters["spotSku"]:
+        df = df[df["spotSku"].isin(filters["spotSku"])]
+    if filters["spotSkuType"]:
+        df = df[df["spotSkuType"].isin(filters["spotSkuType"])]
+
+    bool_columns = ["kitRegistered", "sampleDelivered", "sampleReceived", 
+                    "sampleRejected", "sampleResulted", "orderPublished", 
+                    "sampleOverdue", "sampleInTransit", "sampleProcessed"]
+
+    for col in bool_columns:
+        if filters[col] != 'ALL':
+            if filters[col] == 'True':
+                df = df[df[col] == True]
+            elif filters[col] == 'False':
+                df = df[df[col] == False]
+
+    range_columns = ["shippingTime", "labProcessingTime", "reportPublishingTime", "totalProcessingTime"]
+    for col in range_columns:
+        min_val, max_val = filters[col]
+        if min_val is not None and max_val is not None:
+            df = df[df[col].notnull() & (df[col] >= min_val) & (df[col] <= max_val)]
+
+    # Filter by selected years and months for sampleDelivered/sampleReceived
+    if filters["selectedYears"] and filters["selectedMonths"]:
+        df = df[
+            ((df["deliveredDate"].dt.year.isin(filters["selectedYears"])) & (df["deliveredDate"].dt.month.isin(filters["selectedMonths"]))) |
+            ((df["receivedDate"].dt.year.isin(filters["selectedYears"])) & (df["receivedDate"].dt.month.isin(filters["selectedMonths"])))
+        ]
+
+    return df.reset_index(drop=True)  # Reset index after filtering

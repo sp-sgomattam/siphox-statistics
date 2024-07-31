@@ -88,16 +88,7 @@ def apply_functions(df):
 
 # Function to clean and sort lab data
 def clean_lab_data(in_lab):
-    in_lab = in_lab[
-        ~in_lab["spotSku"].isin(
-            [
-                "quantify_cortisol_kit",
-                "quantify_dna_methylation_kit",
-                "quantify_microtainer_collection_kit",
-            ]
-        )
-    ]
-    in_lab = in_lab[~((in_lab["status"] == "rejected") & (in_lab["status"] == "resulted"))]
+    #in_lab = in_lab[~((in_lab["status"] == "rejected") & (in_lab["status"] == "resulted"))]
 
     for col in in_lab.columns:
         if "date" in col.lower():
@@ -106,7 +97,6 @@ def clean_lab_data(in_lab):
     return in_lab.sort_values(by="lastUpdatedDate", ascending=False)
 
 # Main function to prepare data
-@lru_cache(maxsize=None)
 def prepare_data():
     client = connect_mongo()
     docs = pull_mongo_data(client)
