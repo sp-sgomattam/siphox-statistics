@@ -175,6 +175,30 @@ def generate_message(latest_row):
     ----------------------------------------------------------------------------------------------
     """
     
+def generate_raw_data(df):
+    last_month = datetime.now().month - 1
+    month_data = df[
+            ((df["receivedDate"].dt.month == last_month) & 
+            (df["receivedDate"].dt.year == datetime.now().year)) | 
+            ((df["rejectedDate"].dt.month == last_month) & 
+            (df["rejectedDate"].dt.year == datetime.now().year))
+    ]
+    
+    columns = [
+        'orderID', 'sampleID', 'businessKey', 'country', 'spotSku', 'spotSkuType', 
+        'createdDate', 'kitRegistered', 'registeredDate', 'targetDate', 'breaksGuarantee', 
+        'sampleInTransit', 'droppedOffDate', 'sampleDelivered', 'deliveredDate', 
+        'sampleReceived', 'receivedDate', 'sampleProcessed', 'sampleResulted', 
+        'resultedDate', 'sampleRejected', 'rejectedDate', 'orderPublished', 
+        'publishedDate', 'shippingTime', 'labProcessingTime', 'reportPublishingTime', 
+        'totalProcessingTime'
+    ]   
+    filtered_month_data = month_data[columns]
+
+    month_data_path = r"files\month_data_raw.csv"
+    filtered_month_data.to_csv(month_data_path, index=False)
+    
+    return month_data_path
 
 def main():
     # Prepare data
@@ -195,15 +219,8 @@ def main():
     all_months = list(range(1, last_month + 1))
     all_data = process_data_for_months(df, 2024, all_months)
     
-    month_data = df[
-            ((df["receivedDate"].dt.month == last_month) & 
-            (df["receivedDate"].dt.year == datetime.now().year)) | 
-            ((df["rejectedDate"].dt.month == last_month) & 
-            (df["rejectedDate"].dt.year == datetime.now().year))
-    ]
-
-    month_data_path = r"files\month_data_raw.csv"
-    month_data.to_csv(month_data_path, index=False)
+    # month data
+    month_data_path = generate_raw_data(df)
     
     # Plot Data
     image = plot_boxplots(df, 2024, last_month)
