@@ -15,3 +15,16 @@ def send_email(message, file):
     response = requests.post(webhook_url, json=data)
     print(response.status_code)
     print(response.text)
+    
+def update_zapier_table(file):
+    # Send webhook
+    webhook_url = 'https://hooks.zapier.com/hooks/catch/12315584/2ul7q69/'
+    with open(file, 'rb') as f:
+        encoded_csv = base64.b64encode(f.read()).decode('utf-8')
+    data = {"""  """
+        'csv': encoded_csv
+    }
+    
+    response = requests.post(webhook_url, json=data)
+    print(response.status_code)
+    print(response.text)

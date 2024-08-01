@@ -139,7 +139,7 @@ def main():
     in_lab = filter_daily(df)
     
     # to csv
-    path0 = r"files\all_data.csv"
+    path0 = r"files\daily_statistics.csv"
     in_lab.to_csv(path0, index=False)
 
     # send data
@@ -152,14 +152,8 @@ def main():
     TEST_CHANNEL_ID = os.getenv("TEST_CHANNEL_ID")
     USSL_CHANNEL_ID = os.getenv("USSL_CHANNEL_ID")
     send_slack_message(SLACK_DAILY_TOKEN, message, [path0], TEST_CHANNEL_ID)
-    send_email(message, path0)
+    #send_email(message, path0)
     return in_lab
-
-
-# Lambda handler function
-def lambda_handler(event, context):
-    data = main()
-    return {"statusCode": 200, "body": "Process completed successfully"}
 
 
 # executes main when running locally
