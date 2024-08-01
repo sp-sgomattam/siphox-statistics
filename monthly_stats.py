@@ -228,7 +228,7 @@ def main():
     SLACK_MONTHLY_TOKEN = os.getenv("SLACK_MONTHLY_TOKEN")
     OPS_CHANNEL_ID = os.getenv("OPS_CHANNEL_ID")
     TEST_CHANNEL_ID = os.getenv("TEST_CHANNEL_ID")
-    send_slack_message(SLACK_MONTHLY_TOKEN, final_message, [summary_path, month_data, image], TEST_CHANNEL_ID)
+    send_slack_message(SLACK_MONTHLY_TOKEN, final_message, [summary_path, month_data_path, image], OPS_CHANNEL_ID)
 
 # Execute main function when running the script directly
 if __name__ == "__main__":
