@@ -90,7 +90,7 @@ def generate_dictionary(df):
         "kitRegistered": kit_registered,
         "registeredDate": None,
         "targetDate": None,
-        "sampleOverdue": sample_overdue,
+        "breaksGuarantee": sample_overdue,
         "sampleInTransit": sample_in_transit,
         "droppedOffDate": None,
         "sampleDelivered": sample_delivered,
@@ -140,7 +140,7 @@ def filter_dataframe(df, filters):
 
     bool_columns = ["kitRegistered", "sampleDelivered", "sampleReceived", 
                     "sampleRejected", "sampleResulted", "orderPublished", 
-                    "sampleOverdue", "sampleInTransit", "sampleProcessed"]
+                    "breaksGuarantee", "sampleInTransit", "sampleProcessed"]
 
     for col in bool_columns:
         if filters[col] != 'ALL':

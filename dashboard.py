@@ -21,7 +21,7 @@ def load_and_prepare_data():
     df = prepare_data()
     columns = [
         'orderID', 'sampleID', 'businessKey', 'country', 'spotSku', 'spotSkuType', 
-        'createdDate', 'kitRegistered', 'registeredDate', 'targetDate', 'sampleOverdue', 
+        'createdDate', 'kitRegistered', 'registeredDate', 'targetDate', 'breaksGuarantee', 
         'sampleInTransit', 'droppedOffDate', 'sampleDelivered', 'deliveredDate', 
         'sampleReceived', 'receivedDate', 'sampleProcessed', 'sampleResulted', 
         'resultedDate', 'sampleRejected', 'rejectedDate', 'orderPublished', 
@@ -67,7 +67,7 @@ num_processed = filtered_df['sampleProcessed'].sum()
 cols[len(time_columns)].metric(label="Total Samples Processed", value=int(num_processed))
 
 # Add the Number of Samples Overdue metric
-num_overdue = filtered_df['sampleOverdue'].sum()
+num_overdue = filtered_df['breaksGuarantee'].sum()
 cols[len(time_columns) + 1].metric(label="Number of Samples Overdue", value=int(num_overdue))
 
 

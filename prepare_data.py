@@ -76,7 +76,7 @@ def apply_functions(df):
     df["totalProcessingTime"] = df.apply(lambda row: calculate_times(row, "droppedOffDate", "publishedDate"), axis=1)
 
     # Determine if the sample is overdue
-    df["sampleOverdue"] = df.apply(
+    df["breaksGuarantee"] = df.apply(
         lambda row: (calc_diff_days2(row["droppedOffDate"], datetime.today()) > 5.0)
         if pd.notna(row["droppedOffDate"]) and not row["sampleResulted"]
         else (calc_diff_days2(row["droppedOffDate"], row["publishedDate"]) > 5.0)

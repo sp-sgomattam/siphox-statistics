@@ -23,7 +23,7 @@ def filter_daily(df):
             "daysSinceReceived",
             "receivedDate",
             "lastUpdatedDate",
-            "sampleOverdue",
+            "breaksGuarantee",
             "collectionRecorded",
             "receivedOnTime",
         ]]
@@ -82,7 +82,7 @@ def generate_message(in_lab):
     not_processed = delivered_received["sampleID"].count()
     less_than_two_days = in_lab[(in_lab["daysSinceReceived"] < 2.0)]["sampleID"].count()
     two_or_more_days = in_lab[in_lab["daysSinceReceived"] >= 2.0]["sampleID"].count()
-    samples_overdue = in_lab[in_lab["sampleOverdue"] == True]
+    samples_overdue = in_lab[in_lab["breaksGuarantee"] == True]
 
     overdue_max = 0
     overdue_med = 0

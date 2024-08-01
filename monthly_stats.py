@@ -60,7 +60,7 @@ def process_data_for_months(df, year, months):
 
         # Calculate total processing statistics
         avg_total_processing_time = month_data['totalProcessingTime'].mean().round(2)
-        samples_overdue = completed_samples[completed_samples['sampleOverdue'] == True]
+        samples_overdue = completed_samples[completed_samples['breaksGuarantee'] == True]
         num_samples_overdue = samples_overdue['totalProcessingTime'].notna().sum()
         overdue_under_7 = samples_overdue[(samples_overdue['totalProcessingTime'] < 7) & (samples_overdue['totalProcessingTime'] >= 5)]['totalProcessingTime'].notna().sum()
         overdue_under_12 = samples_overdue[(samples_overdue['totalProcessingTime'] < 12) & (samples_overdue['totalProcessingTime'] >= 7)]['totalProcessingTime'].notna().sum()
@@ -195,6 +195,16 @@ def main():
     all_months = list(range(1, last_month + 1))
     all_data = process_data_for_months(df, 2024, all_months)
     
+    month_data = df[
+            ((df["receivedDate"].dt.month == last_month) & 
+            (df["receivedDate"].dt.year == datetime.now().year)) | 
+            ((df["rejectedDate"].dt.month == last_month) & 
+            (df["rejectedDate"].dt.year == datetime.now().year))
+    ]
+
+    month_data_path = r"files\month_data_raw.csv"
+    month_data.to_csv(month_data_path, index=False)
+    
     # Plot Data
     image = plot_boxplots(df, 2024, last_month)
 
@@ -218,7 +228,7 @@ def main():
     SLACK_MONTHLY_TOKEN = os.getenv("SLACK_MONTHLY_TOKEN")
     OPS_CHANNEL_ID = os.getenv("OPS_CHANNEL_ID")
     TEST_CHANNEL_ID = os.getenv("TEST_CHANNEL_ID")
-    send_slack_message(SLACK_MONTHLY_TOKEN, final_message, [summary_path, image], TEST_CHANNEL_ID)
+    send_slack_message(SLACK_MONTHLY_TOKEN, final_message, [summary_path, month_data, image], TEST_CHANNEL_ID)
 
 # Execute main function when running the script directly
 if __name__ == "__main__":
