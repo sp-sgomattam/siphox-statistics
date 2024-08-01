@@ -60,11 +60,11 @@ def process_data_for_months(df, year, months):
 
         # Calculate total processing statistics
         avg_total_processing_time = month_data['totalProcessingTime'].mean().round(2)
-        samples_overdue = completed_samples[completed_samples['breaksGuarantee'] == True]
-        num_samples_overdue = samples_overdue['totalProcessingTime'].notna().sum()
-        overdue_under_7 = samples_overdue[(samples_overdue['totalProcessingTime'] < 7) & (samples_overdue['totalProcessingTime'] >= 5)]['totalProcessingTime'].notna().sum()
-        overdue_under_12 = samples_overdue[(samples_overdue['totalProcessingTime'] < 12) & (samples_overdue['totalProcessingTime'] >= 7)]['totalProcessingTime'].notna().sum()
-        overdue_max = samples_overdue[samples_overdue['totalProcessingTime'] >= 12]['totalProcessingTime'].notna().sum()
+        breaks_guarantee = completed_samples[completed_samples['breaksGuarantee'] == True]
+        num_breaks_guarantee = breaks_guarantee['totalProcessingTime'].notna().sum()
+        breaks_guarantee_under_7 = breaks_guarantee[(breaks_guarantee['totalProcessingTime'] < 7) & (breaks_guarantee['totalProcessingTime'] >= 5)]['totalProcessingTime'].notna().sum()
+        breaks_guarantee_under_12 = breaks_guarantee[(breaks_guarantee['totalProcessingTime'] < 12) & (breaks_guarantee['totalProcessingTime'] >= 7)]['totalProcessingTime'].notna().sum()
+        breaks_guarantee_max = breaks_guarantee[breaks_guarantee['totalProcessingTime'] >= 12]['totalProcessingTime'].notna().sum()
 
         # Store monthly statistics
         monthly_data[month] = {
@@ -87,10 +87,10 @@ def process_data_for_months(df, year, months):
             "published_under_2": published_under_2,
             "published_over_2": published_over_2,
             "avg_total_processing_time": avg_total_processing_time,
-            "num_samples_overdue": num_samples_overdue,
-            "overdue_under_7": overdue_under_7,
-            "overdue_under_12": overdue_under_12,
-            "overdue_max": overdue_max,
+            "num_breaks_guarantee": num_breaks_guarantee,
+            "breaks_guarantee_under_7": breaks_guarantee_under_7,
+            "breaks_guarantee_under_12": breaks_guarantee_under_12,
+            "breaks_guarantee_max": breaks_guarantee_max,
             "warning": warning,
         }
 
@@ -168,10 +168,10 @@ def generate_message(latest_row):
     ----------------------------------------------------------------------------------------------
     *OVERDUE SAMPLES*
     Avg Total Processing Time: {latest_row['avg_total_processing_time']:.2f} days
-    Number of Samples Overdue: {latest_row['num_samples_overdue']}
-    Overdue <= 7 Days: {latest_row['overdue_under_7']}
-    Overdue 7-12 Days: {latest_row['overdue_under_12']}
-    Overdue > 12 Days: {latest_row['overdue_max']}
+    Number of Samples Overdue: {latest_row['num_breaks_guarantee']}
+    Overdue <= 7 Days: {latest_row['breaks_guarantee_under_7']}
+    Overdue 7-12 Days: {latest_row['breaks_guarantee_under_12']}
+    Overdue > 12 Days: {latest_row['breaks_guarantee_max']}
     ----------------------------------------------------------------------------------------------
     """
     
@@ -204,11 +204,18 @@ def main():
     # Prepare data
     df = prepare_data()
     
+    # filter for extraneous values
+    df = df[
+        ~df["spotSkuType"].isin(
+            [
+                "DNA_METHYLATION",
+                "CORTISOL",
+            ]
+        )
+    ]
     df = df[
         ~df["spotSku"].isin(
             [
-                "quantify_cortisol_kit",
-                "quantify_dna_methylation_kit",
                 "quantify_microtainer_collection_kit",
             ]
         )
