@@ -8,6 +8,26 @@ import matplotlib.pyplot as plt
 from prepare_data import prepare_data
 from utils.slack_utils import send_slack_message
 
+def filter_extraneous_values(df):
+    # filter for extraneous values
+    df = df[
+        ~df["spotSkuType"].isin(
+            [
+                "DNA_METHYLATION",
+                "CORTISOL",
+            ]
+        )
+    ]
+    df = df[
+        ~df["spotSku"].isin(
+            [
+                "quantify_microtainer_collection_kit",
+            ]
+        )
+    ]
+    
+    return None
+
 # Function to process data for specified months of a given year
 def process_data_for_months(df, year, months):
     monthly_data = {}
@@ -203,23 +223,7 @@ def generate_raw_data(df):
 def main():
     # Prepare data
     df = prepare_data()
-    
-    # filter for extraneous values
-    df = df[
-        ~df["spotSkuType"].isin(
-            [
-                "DNA_METHYLATION",
-                "CORTISOL",
-            ]
-        )
-    ]
-    df = df[
-        ~df["spotSku"].isin(
-            [
-                "quantify_microtainer_collection_kit",
-            ]
-        )
-    ]
+    df = filter_extraneous_values(df)
 
     # Define the months to process
     last_month = datetime.now().month - 1

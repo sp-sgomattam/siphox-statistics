@@ -37,11 +37,18 @@ def filter_daily(df):
     df = df[df["daysSinceDelivered"] < 30]
     df = df[df["droppedOffDate"] > two_months_ago]
     
+    # filter for extraneous values
+    df = df[
+        ~df["spotSkuType"].isin(
+            [
+                "DNA_METHYLATION",
+                "CORTISOL",
+            ]
+        )
+    ]
     df = df[
         ~df["spotSku"].isin(
             [
-                "quantify_cortisol_kit",
-                "quantify_dna_methylation_kit",
                 "quantify_microtainer_collection_kit",
             ]
         )
