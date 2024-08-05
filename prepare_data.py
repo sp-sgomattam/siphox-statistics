@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from datetime import datetime
 from functools import lru_cache
 from utils.mongo_utils import *
@@ -88,8 +87,6 @@ def apply_functions(df):
 
 # Function to clean and sort lab data
 def clean_lab_data(in_lab):
-    #in_lab = in_lab[~((in_lab["status"] == "rejected") & (in_lab["status"] == "resulted"))]
-
     for col in in_lab.columns:
         if "date" in col.lower():
             in_lab[col] = pd.to_datetime(in_lab[col]).dt.round("min")

@@ -3,9 +3,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import pymongo
 from pymongo.errors import PyMongoError
-import requests
-from requests.auth import HTTPDigestAuth
-from pprint import pprint
+
 
 # Load environment variables from .env file
 load_dotenv()

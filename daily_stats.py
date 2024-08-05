@@ -12,6 +12,7 @@ def filter_daily(df):
     df = df[[
             "sampleID",
             "spotSku",
+            "spotSkuType",
             "daysSinceRegistered",
             "registeredDate",
             "daysSinceTransit",
