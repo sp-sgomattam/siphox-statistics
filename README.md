@@ -37,3 +37,7 @@ streamlit dashboard.py ~ for dashboard [IN PROGRESS...]
 - ATLAS_PRIVATE_KEY 
 - ATLAS_PROJECT_ID
 
+## AWS deployment (for dashboard)
+Compress-Archive -Path dashboard.py, Procfile, dashboard_requirements.txt, auth.yaml, utils, prepare_data.py, .ebextensions, .env -DestinationPath app.zip
+
+
