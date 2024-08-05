@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
+
 
 def generate_dictionary(df):
     # Sidebar widgets
@@ -31,7 +33,7 @@ def generate_dictionary(df):
     st.sidebar.header("Date Filters")
 
     # Multi-select for years and months
-    years = list(range(2020, 2025))
+    years = list(range(2020, datetime.today().year + 1))
     months = list(range(1, 13))
     
     selected_years = st.sidebar.multiselect("Select Years for Sample Delivered/Received", options=years)
@@ -156,10 +158,28 @@ def filter_dataframe(df, filters):
             df = df[df[col].notnull() & (df[col] >= min_val) & (df[col] <= max_val)]
 
     # Filter by selected years and months for sampleDelivered/sampleReceived
-    if filters["selectedYears"] and filters["selectedMonths"]:
+    if filters["selectedYears"]:
+        # Filter by years only
+        if not filters["selectedMonths"]:
+            df = df[
+                (df["deliveredDate"].dt.year.isin(filters["selectedYears"])) |
+                (df["receivedDate"].dt.year.isin(filters["selectedYears"]))
+            ]
+        # Filter by both years and months
+        else:
+            df = df[
+                ((df["deliveredDate"].dt.year.isin(filters["selectedYears"])) & 
+                (df["deliveredDate"].dt.month.isin(filters["selectedMonths"]))) |
+                ((df["receivedDate"].dt.year.isin(filters["selectedYears"])) & 
+                (df["receivedDate"].dt.month.isin(filters["selectedMonths"])))
+            ]
+
+    # Handle case when only months are selected (if needed)
+    if filters["selectedMonths"] and not filters["selectedYears"]:
         df = df[
-            ((df["deliveredDate"].dt.year.isin(filters["selectedYears"])) & (df["deliveredDate"].dt.month.isin(filters["selectedMonths"]))) |
-            ((df["receivedDate"].dt.year.isin(filters["selectedYears"])) & (df["receivedDate"].dt.month.isin(filters["selectedMonths"])))
+            (df["deliveredDate"].dt.month.isin(filters["selectedMonths"])) |
+            (df["receivedDate"].dt.month.isin(filters["selectedMonths"]))
         ]
+
 
     return df.reset_index(drop=True)  # Reset index after filtering

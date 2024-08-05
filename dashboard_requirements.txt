@@ -1,0 +1,12 @@
+streamlit==1.25.0
+pandas==2.1.1
+streamlit_pandas==0.0.6
+streamlit_authenticator
+psutil==5.9.5
+numpy==1.26.0
+matplotlib==3.8.0
+slack_sdk==3.21.3
+python-dotenv
+pymongo
+requests
+pprintpp

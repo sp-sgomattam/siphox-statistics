@@ -1,0 +1,22 @@
+credentials:
+  usernames:
+    siphox:
+      email: support@siphoxhealth.com
+      failed_login_attempts: 2 # Will be managed automatically
+      logged_in: False # Will be managed automatically
+      name: Sri
+      password: '$2b$12$whl5Qs8DZ6IdMKRjO6ZvuOPnNwsi4lUPgcSTDRAUkL9NjY7cumfMO' # Will be hashed automatically
+cookie:
+  expiry_days: 30
+  key: c09b7b24c3d51eda8e1e50c0f04a3d61 # Must be string
+  name: d613f91f66db07a3
+pre-authorized:
+  emails:
+  - growth@siphoxhealth.com
+  - mike@siphox.com
+  - jordan.moradian@siphox.com
+  - colin@siphox.com
+  - pavel@siphox.com
+  - yaniv.goder@siphox.com
+  - noah.weinstein@siphox.com
+  - jernej@siphoxhealth.com
