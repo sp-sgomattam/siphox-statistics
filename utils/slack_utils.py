@@ -28,8 +28,13 @@ def send_slack_message(token, message, input_files, slack_channel_id=USSL_CHANNE
 
         file_id = new_file.get("file_id")
         upload_url = new_file.get('upload_url')
-        files = {'file': open(input_file, 'rb')}  # Specify the file you want to upload
-        response = requests.post(upload_url, files=files)
+        upload_url = new_file.get('upload_url')
+        if upload_url:
+            files = {'file': open(input_file, 'rb')}  # Specify the file you want to upload
+            response = requests.post(upload_url, files=files)
+            print(response.text)
+        else:
+            print(f"Failed to get upload URL for file: {input_file}")
         print(response.text)
         
         file_ids.append({"id": file_id, "title": f"Data_{datetime.date.today()}"})
