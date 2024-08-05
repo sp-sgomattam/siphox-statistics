@@ -9,7 +9,7 @@ import yaml
 from prepare_data import prepare_data
 from utils.streamlit_utils import generate_dictionary, filter_dataframe
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="SiPhox Statistics Dashboard", page_icon=":rocket:", layout="wide")
 
 
 # Load configuration from YAML file
@@ -46,6 +46,9 @@ elif st.session_state['authentication_status'] is None:
 
 if st.session_state['authentication_status'] is True:
     st.title("SiPhox Health OPS Dashboard")
+    st.write("> *Please not that all metrics are related to SAMPLES unless explicitly stated otherwise*")
+    st.write("\n" * 10)
+    
     # Function to check memory usage
     def print_memory_usage():
         process = psutil.Process(os.getpid())
@@ -53,12 +56,12 @@ if st.session_state['authentication_status'] is True:
         st.write(f"Memory usage: {memory_info.rss / 1024 ** 2:.2f} MB")
 
     # Cache the data preparation step
-    @st.cache_data
+    @st.cache_data(ttl=1800)
     def load_and_prepare_data():
         df = prepare_data()
         columns = [
             'orderID', 'sampleID', 'businessKey', 'country', 'spotSku', 'spotSkuType', 
-            'createdDate', 'kitRegistered', 'registeredDate', 'targetDate', 'breaksGuarantee', 
+            'createdDate', 'kitShippingTime', 'kitRegistered', 'registeredDate', 'targetDate', 'breaksGuarantee', 
             'sampleInTransit', 'droppedOffDate', 'sampleDelivered', 'deliveredDate', 
             'sampleReceived', 'receivedDate', 'sampleProcessed', 'sampleResulted', 
             'resultedDate', 'sampleRejected', 'rejectedDate', 'orderPublished', 
@@ -83,9 +86,10 @@ if st.session_state['authentication_status'] is True:
     all_widgets = sp.create_widgets(df, data_dictionary, ignore_columns=cols)
 
     # Calculate averages and display metrics
-    time_columns = ["totalProcessingTime", "shippingTime", "labProcessingTime", "reportPublishingTime"]
+    time_columns = ["totalProcessingTime", "kitShippingTime", "shippingTime", "labProcessingTime", "reportPublishingTime"]
     column_titles = {
-        "shippingTime": "Average Shipping Time",
+        "kitShippingTime": "Average KIT Shipping Time",
+        "shippingTime": "Average SAMPLE Shipping Time",
         "labProcessingTime": "Average Lab Processing Time",
         "reportPublishingTime": "Average Report Publishing Time",
         "totalProcessingTime": "Average Total Processing Time"

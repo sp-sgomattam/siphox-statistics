@@ -47,12 +47,14 @@ def generate_dictionary(df):
         max_val = st.sidebar.number_input(f"Max {label}", value=max_value)
         return min_val, max_val
 
+    kit_shipping_time = st.sidebar.checkbox('KIT Shipping Time')
     shipping_time = st.sidebar.checkbox('USPS Shipping Time')
     lab_processing_time = st.sidebar.checkbox('USSL Processing Time')
     report_publishing_time = st.sidebar.checkbox('SiPhox Publishing Time')
     total_processing_time = st.sidebar.checkbox('Total Processing Time')
 
     range_columns = {
+        "kitShippingTime": range_input('KIT Shipping Time', df['shippingTime'].min(), df['shippingTime'].max()) if kit_shipping_time else (None, None),
         "shippingTime": range_input('Shipping Time', df['shippingTime'].min(), df['shippingTime'].max()) if shipping_time else (None, None),
         "labProcessingTime": range_input('Lab Processing Time', df['labProcessingTime'].min(), df['labProcessingTime'].max()) if lab_processing_time else (None, None),
         "reportPublishingTime": range_input('Report Publishing Time', df['reportPublishingTime'].min(), df['reportPublishingTime'].max()) if report_publishing_time else (None, None),
@@ -80,6 +82,7 @@ def generate_dictionary(df):
     else:
         kit_registered = sample_delivered = sample_received = sample_rejected = sample_resulted = order_published = sample_overdue = sample_in_transit = sample_processed = None
 
+
     # Initialize the dictionary
     data_dict = {
         "orderID": order_id,
@@ -106,6 +109,7 @@ def generate_dictionary(df):
         "rejectedDate": None,
         "orderPublished": order_published,
         "publishedDate": None,
+        "kitShippingTime": range_columns["kitShippingTime"],
         "shippingTime": range_columns["shippingTime"],
         "labProcessingTime": range_columns["labProcessingTime"],
         "reportPublishingTime": range_columns["reportPublishingTime"],
@@ -151,7 +155,7 @@ def filter_dataframe(df, filters):
             elif filters[col] == 'False':
                 df = df[df[col] == False]
 
-    range_columns = ["shippingTime", "labProcessingTime", "reportPublishingTime", "totalProcessingTime"]
+    range_columns = ["kitShippingTime", "shippingTime", "labProcessingTime", "reportPublishingTime", "totalProcessingTime"]
     for col in range_columns:
         min_val, max_val = filters[col]
         if min_val is not None and max_val is not None:

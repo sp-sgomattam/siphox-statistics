@@ -38,6 +38,8 @@ def filter_vals(df):
 # Function to apply various calculations and transformations to the DataFrame
 def apply_functions(df):
     event_names = [
+        ("kitInTransit", "kitInTransitDiff", "kitInTransitDate", "daysSinceKitInTransit"),
+        ("kitDelivered", "kitDeliveredDiff", "kitDeliveredDate", "daysSinceKitDelivered"),
         ("kitRegistered", "kitRegisteredDiff", "registeredDate", "daysSinceRegistered"),
         ("sampleInTransit", "sampleInTransitDiff", "droppedOffDate", "daysSinceTransit"),
         ("sampleDelivered", "sampleDeliveredDiff", "deliveredDate", "daysSinceDelivered"),
@@ -69,6 +71,7 @@ def apply_functions(df):
         return calc_diff_days2(row[start_col], row[end_col]) if pd.notna(row[start_col]) and pd.notna(row[end_col]) else None
 
     # Calculate various processing times
+    df["kitShippingTime"] = df.apply(lambda row: calculate_times(row, "kitInTransitDate", "kitDeliveredDate"), axis=1)
     df["shippingTime"] = df.apply(lambda row: calculate_times(row, "droppedOffDate", "deliveredDate") or calculate_times(row, "droppedOffDate", "receivedDate"), axis=1)
     df["labProcessingTime"] = df.apply(lambda row: calculate_times(row, "deliveredDate", "resultedDate") or calculate_times(row, "deliveredDate", "rejectedDate") or calculate_times(row, "receivedDate", "resultedDate") or calculate_times(row, "receivedDate", "rejectedDate"), axis=1)
     df["reportPublishingTime"] = df.apply(lambda row: calculate_times(row, "resultedDate", "publishedDate"), axis=1)
