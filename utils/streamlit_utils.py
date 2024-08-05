@@ -2,32 +2,38 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
+def generate_dictionary(df, preset_values=None):
+    if preset_values is None:
+        preset_values = {}
 
-def generate_dictionary(df):
     # Sidebar widgets
     st.sidebar.header("General Filters")
     
-    order_id = st.sidebar.text_input('Order ID')
-    sample_id = st.sidebar.text_input('Sample ID')
+    order_id = st.sidebar.text_input('Order ID', value=preset_values.get("order_id", ""))
+    sample_id = st.sidebar.text_input('Sample ID', value=preset_values.get("sample_id", ""))
     
     business_key = st.sidebar.multiselect(
         'Business Key',
         options=df['businessKey'].unique().tolist(),
+        default=preset_values.get("business_key", [])
     )
     
     spot_sku = st.sidebar.multiselect(
         'Spot SKU',
         options=df['spotSku'].unique().tolist(),
+        default=preset_values.get("spot_sku", [])
     )
 
     spot_sku_type = st.sidebar.multiselect(
         'Spot SKU Type',
         options=df['spotSkuType'].unique().tolist(),
+        default=preset_values.get("spot_sku_type", [])
     )
 
     country = st.sidebar.multiselect(
         'Country',
         options=df['country'].unique().tolist(),
+        default=preset_values.get("country", [])
     )
     
     st.sidebar.header("Date Filters")
@@ -36,52 +42,51 @@ def generate_dictionary(df):
     years = list(range(2020, datetime.today().year + 1))
     months = list(range(1, 13))
     
-    selected_years = st.sidebar.multiselect("Select Years for Sample Delivered/Received", options=years)
-    selected_months = st.sidebar.multiselect("Select Months for Sample Delivered/Received", options=months, format_func=lambda x: f"{x:02d}")
+    selected_years = st.sidebar.multiselect("Select Years for Sample Delivered/Received", options=years, default=preset_values.get("selected_years", []))
+    selected_months = st.sidebar.multiselect("Select Months for Sample Delivered/Received", options=months, format_func=lambda x: f"{x:02d}", default=preset_values.get("selected_months", []))
 
     st.sidebar.header("Time Filters")
     st.sidebar.write("*Note that these filters only show items which meet the criteria. Ex: Lab Processing Time only shows items which have been processed by USSL*")
 
-    def range_input(label, min_value, max_value):
-        min_val = st.sidebar.number_input(f"Min {label}", value=min_value)
-        max_val = st.sidebar.number_input(f"Max {label}", value=max_value)
+    def range_input(label, min_value, max_value, preset_min=None, preset_max=None):
+        min_val = st.sidebar.number_input(f"Min {label}", value=preset_min if preset_min is not None else min_value)
+        max_val = st.sidebar.number_input(f"Max {label}", value=preset_max if preset_max is not None else max_value)
         return min_val, max_val
 
-    kit_shipping_time = st.sidebar.checkbox('KIT Shipping Time')
-    shipping_time = st.sidebar.checkbox('USPS Shipping Time')
-    lab_processing_time = st.sidebar.checkbox('USSL Processing Time')
-    report_publishing_time = st.sidebar.checkbox('SiPhox Publishing Time')
-    total_processing_time = st.sidebar.checkbox('Total Processing Time')
+    kit_shipping_time = st.sidebar.checkbox('KIT Shipping Time', value=preset_values.get("kit_shipping_time", False))
+    shipping_time = st.sidebar.checkbox('USPS Shipping Time', value=preset_values.get("shipping_time", False))
+    lab_processing_time = st.sidebar.checkbox('USSL Processing Time', value=preset_values.get("lab_processing_time", False))
+    report_publishing_time = st.sidebar.checkbox('SiPhox Publishing Time', value=preset_values.get("report_publishing_time", False))
+    total_processing_time = st.sidebar.checkbox('Total Processing Time', value=preset_values.get("total_processing_time", False))
 
     range_columns = {
-        "kitShippingTime": range_input('KIT Shipping Time', df['shippingTime'].min(), df['shippingTime'].max()) if kit_shipping_time else (None, None),
-        "shippingTime": range_input('Shipping Time', df['shippingTime'].min(), df['shippingTime'].max()) if shipping_time else (None, None),
-        "labProcessingTime": range_input('Lab Processing Time', df['labProcessingTime'].min(), df['labProcessingTime'].max()) if lab_processing_time else (None, None),
-        "reportPublishingTime": range_input('Report Publishing Time', df['reportPublishingTime'].min(), df['reportPublishingTime'].max()) if report_publishing_time else (None, None),
-        "totalProcessingTime": range_input('Total Processing Time', df['totalProcessingTime'].min(), df['totalProcessingTime'].max()) if total_processing_time else (None, None)
+        "kitShippingTime": range_input('KIT Shipping Time', df['shippingTime'].min(), df['shippingTime'].max(), *preset_values.get("range_columns", {}).get("kitShippingTime", (None, None))) if kit_shipping_time else (None, None),
+        "shippingTime": range_input('Shipping Time', df['shippingTime'].min(), df['shippingTime'].max(), *preset_values.get("range_columns", {}).get("shippingTime", (None, None))) if shipping_time else (None, None),
+        "labProcessingTime": range_input('Lab Processing Time', df['labProcessingTime'].min(), df['labProcessingTime'].max(), *preset_values.get("range_columns", {}).get("labProcessingTime", (None, None))) if lab_processing_time else (None, None),
+        "reportPublishingTime": range_input('Report Publishing Time', df['reportPublishingTime'].min(), df['reportPublishingTime'].max(), *preset_values.get("range_columns", {}).get("reportPublishingTime", (None, None))) if report_publishing_time else (None, None),
+        "totalProcessingTime": range_input('Total Processing Time', df['totalProcessingTime'].min(), df['totalProcessingTime'].max(), *preset_values.get("range_columns", {}).get("totalProcessingTime", (None, None))) if total_processing_time else (None, None)
     }
 
     st.sidebar.header("Other")
 
     # Checkbox for filtering by event
-    filter_by_event = st.sidebar.checkbox("Filter by Individual Event")
+    filter_by_event = st.sidebar.checkbox("Filter by Individual Event", value=preset_values.get("filter_by_event", False))
 
     if filter_by_event:
-        def boolean_select(label):
-            return st.sidebar.selectbox(label, options=['ALL', 'True', 'False'])
+        def boolean_select(label, preset_value):
+            return st.sidebar.selectbox(label, options=['ALL', 'True', 'False'], index=['ALL', 'True', 'False'].index(preset_value))
 
-        kit_registered = boolean_select('Kit Registered')
-        sample_delivered = boolean_select('Sample Delivered')
-        sample_received = boolean_select('Sample Received')
-        sample_rejected = boolean_select('Sample Rejected')
-        sample_resulted = boolean_select('Sample Resulted')
-        order_published = boolean_select('Order Published')
-        sample_overdue = boolean_select('Sample Overdue')
-        sample_in_transit = boolean_select('Sample In Transit')
-        sample_processed = boolean_select('Sample Processed')
+        kit_registered = boolean_select('Kit Registered', preset_values.get("kit_registered", "ALL"))
+        sample_delivered = boolean_select('Sample Delivered', preset_values.get("sample_delivered", "ALL"))
+        sample_received = boolean_select('Sample Received', preset_values.get("sample_received", "ALL"))
+        sample_rejected = boolean_select('Sample Rejected', preset_values.get("sample_rejected", "ALL"))
+        sample_resulted = boolean_select('Sample Resulted', preset_values.get("sample_resulted", "ALL"))
+        order_published = boolean_select('Order Published', preset_values.get("order_published", "ALL"))
+        sample_overdue = boolean_select('Sample Overdue', preset_values.get("sample_overdue", "ALL"))
+        sample_in_transit = boolean_select('Sample In Transit', preset_values.get("sample_in_transit", "ALL"))
+        sample_processed = boolean_select('Sample Processed', preset_values.get("sample_processed", "ALL"))
     else:
         kit_registered = sample_delivered = sample_received = sample_rejected = sample_resulted = order_published = sample_overdue = sample_in_transit = sample_processed = None
-
 
     # Initialize the dictionary
     data_dict = {
@@ -184,6 +189,5 @@ def filter_dataframe(df, filters):
             (df["deliveredDate"].dt.month.isin(filters["selectedMonths"])) |
             (df["receivedDate"].dt.month.isin(filters["selectedMonths"]))
         ]
-
 
     return df.reset_index(drop=True)  # Reset index after filtering

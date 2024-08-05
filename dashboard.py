@@ -5,6 +5,7 @@ import streamlit_authenticator as stauth
 import psutil
 import os
 import yaml
+from datetime import datetime
 
 from prepare_data import prepare_data
 from utils.streamlit_utils import generate_dictionary, filter_dataframe
@@ -23,6 +24,8 @@ if 'name' not in st.session_state:
     st.session_state['name'] = None
 if 'username' not in st.session_state:
     st.session_state['username'] = None
+if 'preset_button' not in st.session_state:
+    st.session_state.preset_button = False
 
 # Create the authenticator
 authenticator = stauth.Authenticate(
@@ -46,7 +49,7 @@ elif st.session_state['authentication_status'] is None:
 
 if st.session_state['authentication_status'] is True:
     st.title("SiPhox Health OPS Dashboard")
-    st.write("> *Please not that all metrics are related to SAMPLES unless explicitly stated otherwise*")
+    st.write("> *Please note that all metrics are related to SAMPLES unless explicitly stated otherwise*")
     st.write("\n" * 10)
     
     # Function to check memory usage
@@ -72,18 +75,61 @@ if st.session_state['authentication_status'] is True:
         selected_columns = df[columns]
         return selected_columns
 
-
     df = load_and_prepare_data()
     cols = []
 
-    data_dictionary = generate_dictionary(df)
-    if data_dictionary is None:
+    # Define preset values
+    preset_values = {
+        "order_id": "",
+        "sample_id": "",
+        "business_key": [],
+        "spot_sku": [],
+        "spot_sku_type": [],
+        "country": [],
+        "selected_years": [datetime.today().year],
+        "selected_months": [datetime.today().month - 1],
+        "kit_shipping_time": False,
+        "shipping_time": True,
+        "lab_processing_time": True,
+        "report_publishing_time": False,
+        "total_processing_time": False,
+        "range_columns": {
+            "kitShippingTime": (None, None),
+            "shippingTime": (0.49, 31.00),
+            "labProcessingTime": (0.10, 30.00),
+            "reportPublishingTime": (None, None),
+            "totalProcessingTime": (None, None)
+        },
+        "filter_by_event": False,
+        "kit_registered": "ALL",
+        "sample_delivered": "ALL",
+        "sample_received": "ALL",
+        "sample_rejected": "ALL",
+        "sample_resulted": "ALL",
+        "order_published": "ALL",
+        "sample_overdue": "ALL",
+        "sample_in_transit": "ALL",
+        "sample_processed": "ALL"
+    }
+
+    # Button to set preset values
+    if st.sidebar.button("Autofill Preset Values "):
+        st.session_state.preset_button = True
+        st.experimental_rerun()
+
+    # Generate widgets and get filters
+    if st.session_state.preset_button:
+        filters = generate_dictionary(df, preset_values)
+    else:
+        filters = generate_dictionary(df)
+
+    if filters is None:
         st.error("Data dictionary is not generated properly.")
         st.stop()
 
-    filtered_df = filter_dataframe(df, data_dictionary)
+    filtered_df = filter_dataframe(df, filters)
 
-    all_widgets = sp.create_widgets(df, data_dictionary, ignore_columns=cols)
+    all_widgets = sp.create_widgets(df, filters, ignore_columns=cols)
 
     # Calculate averages and display metrics
     time_columns = ["totalProcessingTime", "kitShippingTime", "shippingTime", "labProcessingTime", "reportPublishingTime"]
