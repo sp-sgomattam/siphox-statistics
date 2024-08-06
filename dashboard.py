@@ -168,10 +168,35 @@ if st.session_state['authentication_status'] is True:
     st.write(f"Total Count: {row_count}")
 
     # Create a button to download the DataFrame as a CSV file
-    csv = df.to_csv(index=False).encode('utf-8')
+    csv = filtered_df.to_csv(index=False).encode('utf-8')
     st.download_button(
         label="Export as CSV",
         data=csv,
         file_name='data_export.csv',
         mime='text/csv'
     )
+    
+    st.write("\n" * 10)
+    with st.expander("Click to see Definitions", expanded=False):
+        st.write("Here are the definitions for our key performance metrics:")
+        st.markdown(
+            """
+            * :hourglass: **Average Total Processing Time:** The average total time from sample collection to report publishing.
+
+            * :package: **Average KIT Shipping Time:** The average time it takes for kits to be shipped. Calculated from kitInTransit to kitDelivered.
+
+            * :package: **Average SAMPLE Shipping Time:** The average time it takes for samples to be shipped. Calculated from the time the sample is dropped off to the time it is delivered/received by USSL.
+
+            * :test_tube: **Average Lab Processing Time:** The average time it takes for the lab to process samples. Calculated from the time the sample is delivered/received by USSL to the time the sample is rejected/resulted.
+
+            * :page_facing_up: **Average Report Publishing Time:** The average time it takes to publish reports. Calculated from the time the sample is rejected/resulted to the time the report is published.
+
+            * :white_check_mark: **Total Samples Processed:** The total number of samples that have been resulted or rejected.
+
+            * :warning: **Number of Samples Overdue:** The number of samples that are overdue. Calculated from the time the user drops off the sample at a USPS store/dropbox to the time the report is published, if this time exceeds 5 days.
+
+            * :white_check_mark: **Total Samples On Time (<= 5 days):** The number of samples processed within the guaranteed timeframe (<= 5 days).
+
+            _Note that all times are calculated using business days. Most American holidays are accounted for._
+            """
+        )
