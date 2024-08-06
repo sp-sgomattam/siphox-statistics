@@ -26,7 +26,7 @@ def filter_extraneous_values(df):
         )
     ]
     
-    return None
+    return df
 
 # Function to process data for specified months of a given year
 def process_data_for_months(df, year, months):
